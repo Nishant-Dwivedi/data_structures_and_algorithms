@@ -1,5 +1,4 @@
 // QUESTIONS SOLVED: 13
-
 // findHeight(bst.root)                  LC: 104;  easy
 // bfsTrav(bst)                          LC: 102;  medium
 // preOrdertrav(bst.root)                LC: 144;  easy
@@ -14,12 +13,9 @@
 // rightSIdeView()                       LC:199;   medium
 // rightSideViewBFS()                    -------""-------
 // houseRobber3()                        LC:337;   medium
-
 // ..................................................................................................................................................................................
-
 import binarySearchTree from "../data structures/binarySearchTree.mjs";
 import queue from "../data structures/queue.mjs";
-
 // ..................................................................................................................................................................................
 
 function findHeight(node) {
