@@ -1,4 +1,4 @@
-// two pointers technique is fairly straightforward. what we get is a problem statement that would normally require us to use a nested loop inside another loop which would have a time complexity of the order O(n^2). what we try to do is change our algorithm such that it becomes the order of O(n*logn) by sorting the input first and then finding a solution in one sweep. there can be variants in which we turn O(n^3) algorithms to O(n^2*logn).
+// two pointers technique is fairly straightforward. what we get is a problem statement that would normally require us to use a nested loop inside another loop which would have a time complexity of the order O(n^2). what we try to do is change our algorithm such that it becomes the order of O(n*logn) by sorting the input first and then finding a solution in one sweep. there can be variants in which we turn O(n^3) algorithms to O(n^2).
 
 // ..................................................................................................................................................................................
 // QUESTIONS SOLVED 9
