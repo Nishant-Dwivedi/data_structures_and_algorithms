@@ -10,6 +10,20 @@
 // you shrink the window in such a way that further expansion can continue again(you gain one more swap/delete/ignore back by excluding the element that used it, you eliminate one "kind" of elements completely to allow for a third kind of elements, you remove the first occurrence of a character from the left to allow for its duplicate's inclusion from the right, etc.)
 // when you hit a wall again and can no longer expand while maintaining validity, you check if your current maximally expanded window is the largest one you have found so far or not, if it is, update the size of the largest window.
 // you end this process when your right boundary can no longer be expanded(right boundary hits the last element);
+// here's is a TEMPLATE of how you can find a MINIMUM SIZED WINDOW that's valid =>
+
+// initialize your window attributes(left_boundary, right_boundary, width),  all the state that needs to be tracked while shrinking and expanding;4
+// while (right boundary can’t no longer be expanded){
+    // add the current element to your window;
+    // update the state to reflect the addition of a new element to your window;
+    // if the inclusion of this new element broke the validity of your window
+        // shrink the window till it becomes valid again while keeping the state updates to reflect removal of elements from the left
+    // if our new valid window is the largest sized valid window
+        // update the max_window_size
+    // increment right boundary for further expansion;
+// }
+
+
 
 // some questions ask you to MINIMIZE THE WIDTH OF THE WINDOW.
 // since you already start with a window of width 0, it may or may not even be a valid window (valid window is a window that qualifies a certain restriction).
@@ -22,6 +36,7 @@
 // if a state is maintained in a data structure, it is your responsibilty to keep it updated as you expand/shrink your window.
 // every valid window's width is checked against the thinnest window you have formed so far; if your current window is thinner => you update the thinnest window's width.
 // here's is a TEMPLATE of how you can find a MINIMUM SIZED WINDOW that's valid =>
+
 // initialize your window attributes(left_boundary, right_boundary, width),  all the state that needs to be tracked while shrinking and expanding;
 // while (right boundary can’t no longer be expanded){
 //     check if the current element is eligible to be included in the window; if it is, include it;
@@ -44,7 +59,7 @@
 // similarly, when you minimize a window, once you find a valid window, addition of every new eligible element from the right would allow some shrinkage from the left; But you only remove an element from the left if its removal would not make your window invalid; if it does, your window cant be shrinked futher
 // ................................................................................................................................................................................................................
 
-// QUESTIONS SOLVED: 9
+// QUESTIONS SOLVED: 10
 // maxProfit([7,6,4,3,1])                            // LC:121;   easy
 // lengthOfLongestSubstring("abba")                  // LC:3;     medium
 // checkInclusion("ky", "ainwkckifykxlribaypk")      // LC:567;   medium   #good question
@@ -54,13 +69,44 @@
 // longestSubarray([0,1,1,1,0,1,1,0,1])              // LC:1493;  medium
 // maxVowels("aeiou", 2)                             // LC:1456;  medium
 // minWindow("baAaABabBba", "AbbB")                  // LC:76;    hard     #good question 
-// characterReplacement(AABABBA, 1)
+// characterReplacement("JSDSSMESSTR", 2)            // LC:424;   medium   #good question
 // ................................................................................................................................................................................................................
 import queue from "../data structures/queue.mjs"
 //.................................................................................................................................................................................................................
 
 function characterReplacement(s, k){
+    // initialize the window attributes, state
+    let left = 0;
+    let right = 0; 
+    // we will need the most frequently occurring element
+    let frequency_map = new Map();
+    let max_window_size = Number.MIN_SAFE_INTEGER;
+    let result_string = "";
+    let max_frequency = 0;
 
+    while(right < s.length){
+        // add the current character
+        let current_char = s.charAt(right);
+        // update state to reflect the  inclusion of a new element to your window
+        frequency_map.set(current_char, frequency_map.has(current_char) ? frequency_map.get(current_char) + 1 : 1);
+        // we need the max frequency to check if a window is valid or not; so it's better to keep it update as soon as you add a new element to your window; 
+        // you'd otherwise use a loop to loop over the current members of your window, and then find the most frequent one => slow af!
+        max_frequency = frequency_map.get(current_char) > max_frequency ? frequency_map.get(current_char) : max_frequency;
+    
+        // if our window is invalid; i.e the size of the window - most frequent element is greater than the number of swaps allowed, we shrink to restore validity
+        if((right - left + 1) - max_frequency > k){
+            // we shrink to remove the left most element from our window once; removal of one element is sufficient to restore the validiy of our window; the width of the window will get decreased by one and consequently, (width - max_frequency) will also get decreased by one, and we will have restore validity to add one more element to our window
+            frequency_map.set(s.charAt(left), frequency_map.get(s.charAt(left)) - 1);
+            left++
+        }        
+        // see if our current valid window is the largest valid window
+        result_string = right - left + 1 > max_window_size ? s.slice(left, right + 1) : result_string;
+        max_window_size = Math.max(max_window_size, right - left + 1)
+        right++;
+    }
+    console.log(result_string ,max_window_size);
+    return max_window_size;
+    
 }
 
 function minWindow (s, t){
