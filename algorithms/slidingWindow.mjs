@@ -141,7 +141,9 @@ function minWindow (s, t){
     while(right < s.length){
         // get the current element
         let current = s.charAt(right);
-        // if the current char is eligible to be included in our window; if it is, include it in the window
+        // it is important to observe that our window may also have elements that do not even appear in the target string, and that is okay; The window is valid as long as it has all the characters appearing in the target string. for ex: target = ab; input = bccxay; "bccxa" is our min window substring; another example: target: abc, input: abbbbbbxyzczzzz; "abbbbbbxyzc" is our min window substring. You may have more instances of a character in your answer than necessary but the window becomes invaild only when you have fewer instances of any character than necessary.
+
+        // if the current char has appeared in the target, update the frequency map to reflect it's inclusion in our window;
         if(occurrences_map.has(current)){
         //   update the state to reflect the consequence of adding an element to our window
             char_queue.enqueue(current);

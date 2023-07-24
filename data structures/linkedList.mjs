@@ -62,11 +62,11 @@ export default class linkedList {
       if (current.value == value) {
         // if it's the first node that needs to be deleted, the head of the linked list will need to be updated as well
         if (this.head == current) {
-          this.head = current.next;
+          this.head = this.length > 1 ? current.next : null;
         }
         // if it's the last node that needs to be deleted, the tail of the linked list will need to be updated as well
         if (this.tail == current) {
-          this.tail = prev;
+          this.tail = this.length > 1 ? prev : null;
         }
         //  make prev.next point to current.next and delete what current is pointing to
         prev.next = current.next;
