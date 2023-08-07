@@ -51,7 +51,7 @@
 //     }
 
 
-// certain pitfalls that you need to be aware of:minimum sized window
+// certain pitfalls that you need to be aware of
 // => In "maximizing the window size" problems, when you hit a wall and can no longer expand your window, ascertain that addition of each and every new element on the right hand side of your current right boundary will also lead to your window losing its validity. It should not be a case where your window becomes invalid for addition of a certain element, but becomes valid again if you add more elements from its right without having to shrink first. This is not even a SW problem.
 // => keeping the state updated through expansion, shrinkage and collapse can sometimes be not as straightforward as updating a few variables. Sometimes you have sets, hashmaps. Some times you even forget to do it appropriately. Sometimes you dont even know what the hell qualifies as state for the problem
 // => once you get a valid window, do not shrink your window by removing an element from the left if it's removal would cost you the validity of your window, be it maximizing or minimizing window size problem. 
@@ -59,7 +59,7 @@
 // similarly, when you minimize a window, once you find a valid window, addition of every new eligible element from the right would allow some shrinkage from the left; But you only remove an element from the left if its removal would not make your window invalid; if it does, your window cant be shrinked futher
 // ................................................................................................................................................................................................................
 
-// QUESTIONS SOLVED: 10
+// QUESTIONS SOLVED: 11
 // maxProfit([7,6,4,3,1])                            // LC:121;   easy
 // lengthOfLongestSubstring("abba")                  // LC:3;     medium
 // checkInclusion("ky", "ainwkckifykxlribaypk")      // LC:567;   medium   #good question
@@ -70,9 +70,51 @@
 // maxVowels("aeiou", 2)                             // LC:1456;  medium
 // minWindow("baAaABabBba", "AbbB")                  // LC:76;    hard     #good question 
 // characterReplacement("JSDSSMESSTR", 2)            // LC:424;   medium   #good question
+// numSubarrayProductLessThanK([1,2,3], 0)           //LC:713;    medium   #faster solution when solved sliding window when compared with two pointers
+
 // ................................................................................................................................................................................................................
 import queue from "../data structures/queue.mjs"
 //.................................................................................................................................................................................................................
+
+function numSubarrayProductLessThanK(nums, k){
+    // initialize window attributes
+    let left = 0;
+    let right = 0;
+    let prod = 1;
+    let sub_count = 0;
+    // while the window can be expanded
+    while(right < nums.length){
+        // if the current element can be added to our window
+        if(prod * nums[right] < k){
+        // add the number to our window
+        prod = prod * nums[right];
+        //by adding one more element to our window, we increment the total subarray count by n, where n represents total elements after including the current element in our subarray
+        sub_count += right-left+1;
+        }
+
+        // if the current element  cannot be added to our window without losing validity
+        else{
+            // we check if there is a window to shrink, if there isn't, we move to the next element
+             if(left == right){
+                right++;
+                left++;
+                continue
+            }
+            // else we shrink the window to allow for inclusion of the current element
+            while(prod * nums[right] >= k){
+                prod = prod/nums[left];
+                left++;
+            }
+            // add the element
+            prod = prod * nums[right];
+            // increment the count
+            sub_count += right-left+1;
+        }
+        right++
+    }
+    console.log((sub_count));
+    return sub_count;
+}
 
 function characterReplacement(s, k){
     // initialize the window attributes, state

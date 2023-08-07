@@ -1,4 +1,4 @@
-// Questions solved: 9
+// Questions solved: 11
 // search([3, 5, 1], 3)                                                                                    //LC: 33  medium
 // findMin([4,5,6,7,0,1,2])                                                                                //LC: 153 medium 
 // console.log(findClosestElements([1,3], 1, 2));                                                          //LC: 658 medium  #good question
@@ -7,8 +7,212 @@
 // firstBad(500, 30)                                                                                       //LC: 278 easy
 // searchMatrix( [[1,3]], 3)                                                                               //LC: 74  medium
 // searchMatrixTwo([[1,4,7,11,15],[2,5,8,12,19],[3,6,9,16,22],[10,13,14,17,24],[18,21,23,26,30]], 17)      //LC: 240 medium
-// searchMatrixTwo([[-5]], -2)
+// shipWithinDays([3,2,2,4,1,4], 3)                                                                        //LC:1011 medium  #good question
+// maximumCandies([5,8,6], 3)                                                                              //LC:2226 medium  #good question
+// singleNonDuplicate([1,1,2,3,3,4,4,8,8])                                                                 //LC:540  medium  #good question
 // ...................................................................................................................................................................
+
+function singleNonDuplicate(nums){
+    let pairsPossible = Math.floor(nums.length/2);
+    let res = binarySearch(0, nums.length-1, pairsPossible);
+    console.log(res);
+    return res;
+
+    function binarySearch(left, right, pairs){
+        // exit condition
+        if(left > right){
+            return -1
+        }
+
+        let mid = left + Math.floor((right-left)/2);
+        // if mid element is different from its neighbours, it is the unique element
+        if(nums[mid] != nums[mid-1] && nums[mid] != nums[mid+1]){
+            return nums[mid];
+        } 
+        // Note: lets say that there are n elements on either side of mid(there will always be equal no of elements on both sides); One half of search space will have Math.floor(n/2) pairs  + 1 unique element(excluding the middle element), the other half will have (Math.floor(n/2) + 1) pairs (including the middle element); This info can we used to eliminate half the search space; 
+
+        // find the elements on either side of the middle element
+        let elementOnLeftHalf = mid-left;
+        let elementOnRightHalf = right-mid;
+
+        // middle element will form a pair with a neighbouring element on either side; that is one less total pairs;
+        // once middle pair is taken out of the total pairs possible, there are two cases, either remaining number of pairs will be equally distributed on both sides(remaining pairs = even) or one side will have one more pair than the other(remaining pairs = odd); we calculate both the lower and the higher count of pairs
+        let lowerPairCount = Math.floor((pairs-1)/2);
+        let higherPairCount = pairs-1-lowerPairCount;
+        // if mid element's duplicate is on its right, we 
+        if(nums[mid] == nums[mid+1]){
+            // right search space now has one less element because the middle element formed a pair with the adjacent right element
+            elementOnRightHalf--;
+            // if left side can accomodate higherPairCount number of pairs; there is no way it has a single unique element
+            if(elementOnLeftHalf == higherPairCount * 2){
+                // search right half for the lowerPairCount number of pairs; this half has lowerCountPair number of pairs + 1 unique element; mid+2 is to account for the element that formed a pair with the mid element
+                return binarySearch(mid+2, right, lowerPairCount);  
+            }
+            // else if right side can accomodate higherPairCount number of pairs; there is no way it has a single unique element
+            else{
+                //  search the left half for lowerPairCount number of pairs; this half has lowerCountPair number of pairs + 1 unique element
+                return binarySearch(left, mid-1, lowerPairCount);
+            }
+        }  
+        // else if mid element's duplicate is on its left
+        else{
+            // right search space now has one less element because the middle element formed a pair with the adjacent right element
+            elementOnLeftHalf--;
+            // if right side can accomodate higherPairCount number of pairs; there is no way it has a single unique element
+            if(elementOnRightHalf == higherPairCount * 2){
+                 // search left half for the lowerPairCount number of pairs; this half has lowerCountPair number of pairs + 1 unique element; mid-2 is to account for the element that formed a pair with the mid element
+                return binarySearch(left, mid-2, lowerPairCount);
+            }
+            // else if right side can accomodate higherPairCount number of pairs; there is no way it has a single unique element
+            // search the left half for lowerPairCount number of pairs; this half has lowerCountPair number of pairs + 1 unique element
+            else return binarySearch(mid+1, right, lowerPairCount);
+        }
+    }
+}
+
+function maximumCandies(candies, k){
+    // min candies in a pile is k piles with 1 candy each
+    let min = 1;
+    // max candies in a pile is summation of all candies divided by k;
+    let max = 0;
+    for(let i = 0; i < candies.length; i++){
+        max += candies[i]
+    }
+    // early exit; not enough candies for k kids
+    if(max < k){
+        return 0
+    }
+    max = Math.floor(max/k);
+
+    let maxCandies = binarySearch(min, max);
+    console.log(maxCandies);
+    return maxCandies;
+
+    // helper function that does the binary search
+    function binarySearch(min, max){
+        if(min > max){
+            return -1
+        }
+        let mid = min + Math.floor((max-min)/2);
+        let isCurrentPileValid = isValidPileSize(mid);
+        let isSmallerPileValid = isValidPileSize(mid-1);
+        let isLargerPileValid = isValidPileSize(mid+1);
+        // if current pilex size is valid and a pile larger by just one unit is invalid, this is the largest sized pile
+        if(isCurrentPileValid && !isLargerPileValid){
+            return mid
+        }
+        // if the current pile size is invalid and a pile smaller in size by just one unit is valid, the smaller pile is the largest sized valid pile
+        else if(!isCurrentPileValid && isSmallerPileValid){
+            return mid-1
+        }
+        else if(isCurrentPileValid && isSmallerPileValid){
+            return binarySearch(mid+1, max);
+        }
+        else if(!isCurrentPileValid && !isLargerPileValid){
+            return binarySearch(min, mid-1);
+        }
+    }
+    // helper function that checks validity of a pile size
+    function isValidPileSize(pileSize){
+        let pilesCount = 0;
+        for(let i = 0; i < candies.length; i++){
+            // early exit if k piles are already formed
+            if(pilesCount >= k){
+                return true
+            }
+            // if the current pile size is smaller than the pile size we are given, skip this pile since we cannot merge candies from different piles together
+            if(candies[i] < pileSize){
+                continue;
+            }
+            // else check how many piles of the given pile size can be made out of our current pile, and add the count to total
+            else{
+                pilesCount += Math.floor(candies[i]/pileSize);
+            }
+        }
+        // if k or higher number of piles are possible to be formed, return true
+        if(pilesCount >= k){
+            return true
+        }
+        // else return false
+        else return false
+    }
+}
+
+function shipWithinDays (weights, days){
+    // order of shipments is important, do not sort
+    // min capacity is the heaviest weight on the conveyor belt; if this were the capacity,  it would  take at most n days to ship all the shipments
+    // max capacity is the summation of all the weights on the conveyor belt; if this were the capacity, it would take 1 day to ship everything
+    let min = Number.MIN_SAFE_INTEGER;
+    let max = 0;
+    for(let i = 0; i < weights.length; i++ ){
+        max = max + weights[i]
+        min = Math.max(min, weights[i]);
+    }
+    let capacity = binarySearch(min, max);
+    console.log(capacity);
+    return capacity;
+
+    function binarySearch (min, max){
+        if(min > max){
+            return null;
+        }
+        let mid = min + Math.floor((max-min)/2);
+        let isCurrentCapacityValid = isValidCapacity(mid, days);
+        let isLowerCapacityValid = isValidCapacity(mid-1, days);
+        let isHigherCapacityValid =  isValidCapacity(mid+1, days);
+        // we are looking for a capacity such that it's good enough to deliver all the shipments in allocated days, but just 1 unit of capacity lower than this capacity would render the given days as insufficient; 
+        // we want the first valid capacity that allows shipments to be completed in the  given number of days afterall; think about this.
+        if(isCurrentCapacityValid == -1 && isLowerCapacityValid == 1){
+            return mid;
+        }
+        else if(isCurrentCapacityValid == 1 && isHigherCapacityValid == -1){
+            return mid+1;
+        }
+        // if current capacity is sufficient and a capacity higher than current by just one unit of capacity is also sufficient, we search the left half of the search space
+        else if((isCurrentCapacityValid == -1 && isHigherCapacityValid == -1)){
+            return binarySearch(min, mid-1)
+        }
+        // if current capacity is insufficient and a capacity lower than current by just one unit of capacity is also insufficient, we search the right half of the search space
+        else if(isCurrentCapacityValid == 1 && isLowerCapacityValid == 1){
+            return binarySearch (mid+1, max)
+        }
+    }
+    // helper
+    function isValidCapacity(capacity, days){
+        let total = 0;
+        let daysElapsed = 1;
+        let trav = 0;
+        // if for a given capacity, more days get elapsed than necessary, we have an invalid capacity; if fever days than necessary get elapsed, we have toomuch capacity and that is invalid too.
+        while(trav < weights.length){
+            // if ship capacity needs to be increased, return positive one and exit early
+            if(daysElapsed > days){
+                return 1
+            }
+            // if addition of current weight would not exceed capacity, add the weight
+            if(total + weights[trav] <= capacity){
+                total += weights[trav];
+            }
+            // otherwise we add it to be shipped the next day
+            else{
+                // if the weight is larger than the capacity itself, we exit 
+                if(weights[trav] > capacity){
+                    return 1;
+                }
+                daysElapsed++;
+                total = weights[trav];
+            }
+            trav++;
+        }
+        // if the capacity is so high that it takes fewer days than specified in the problem to ship all the goods, there is room to decrease the ship capacity. return -1 to  signify that
+        // a point to note is that even if it takes the exact amount of days as given in the problem, it does not necessarily means there is no room to decrease the capacity of the ship. Example: [1,2,3,4,5,6,7,8,9,10], days: 5; for ship capacity 17, it would take exactly 5 days. but the minimum capacity is 15 not 17.
+        if(daysElapsed <= days){
+            return -1
+        }
+        else{
+            return 1;
+        }
+    }
+}
 
 function searchMatrixTwo(matrix, target){
     let rowStart = null;
