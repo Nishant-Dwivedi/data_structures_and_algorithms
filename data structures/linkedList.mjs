@@ -3,7 +3,6 @@ export default class linkedList {
   head;
   tail;
   length = 0;
-
   constructor() {
     this.head = null;
     this.tail = null;
@@ -12,7 +11,7 @@ export default class linkedList {
   append(value) {
     // create a new node
     const newNode = new node(value, null);
-    // if tail is pointing to null, this is the first node
+    // if tail/head is pointing to null, this is the first node
     if (this.tail == null) {
       this.tail = newNode;
       this.head = newNode;
@@ -38,17 +37,22 @@ export default class linkedList {
       this.length++;
     }
   }
-  // doesnt contain logic for non-primitives atm
+  // doesnt contain logic for non-primitives
   contains(value) {
-    // initialize the starting pointer for traversal to where head is pointing to
+    // initialize the traversal pointer to where head is pointing to
     let traversalPointer = this.head;
+    // while trav isn't pointing to null
     while (traversalPointer !== null) {
+      // if value is found, exit early
       if (traversalPointer.value == value) {
         return true;
-      } else {
+      } 
+      // else move to the next element
+      else {
         traversalPointer = traversalPointer.next;
       }
     }
+    // return false if the loop gets completed without a match
     return false;
   }
 
@@ -86,6 +90,7 @@ export default class linkedList {
   }
 
   insert(value, position) {
+    // error handling for bad inputs
     if (!position) {
       throw new Error("provide a valid position for insertion");
     } else if (this.length < 2) {
@@ -96,7 +101,9 @@ export default class linkedList {
       throw new Error(
         `the valid range for insertion is between 2 and ${this.length} inclusive. use append/prepend to add elements to the tail/head.`
       );
-    } else {
+    }
+    // else iterate to position - 2th element and change some pointers
+     else {
       const newNode = new node(value);
       let traversalPointer = this.head;
       for (let i = 0; i < position - 2; i++) {

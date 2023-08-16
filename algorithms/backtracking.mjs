@@ -29,7 +29,7 @@
 import stack from "../data structures/stack.mjs";
 
 // .................................................................................................................................................................................
-// QUESTIONS SOLVED(14)
+// QUESTIONS SOLVED(15)
 
 // printDiceRollCombinations(3);                                     //GFG question: k dice combinations; easy
 // permuteAString("cat");                                            //GFG question: Write a program to print all Permutations of given String; easy
@@ -45,7 +45,54 @@ import stack from "../data structures/stack.mjs";
 // generateParenthesis(4);                                           //LC 22;  medium
 // restoreIpAddresses("101023")                                      //LC 93;  medium
 // getPermutation(3,3)                                               //lc 60;  hard
+// maxUniqueSplit("aba")                                             //lc1593: medium
 // .........................................................................................................................................................................................
+
+function maxUniqueSplit(s){
+  let max_count = 0;
+  let hashSet = new Set();
+  let partSolution = "";
+  backtrack(partSolution, hashSet, s);
+  console.log(max_count);
+  return max_count;
+  // main funtion
+  function backtrack(partialSolution, alreadyIndcluded, searchSpace){
+    // if partial sol is the exact same size as the given input, the candates in already included concat to form the complete string
+    if(partialSolution.length == s.length){
+      max_count = Math.max(max_count, alreadyIndcluded.size)
+      return
+    }
+    // generate candidates; your candidates are every unique substring starting with the 0th char of your search space; exit early if 0 candidates are returned
+    let candidates = createCandidates(searchSpace, alreadyIndcluded);
+    if(candidates.length == 0){
+      return
+    }
+    // for each candidate 
+    for(let i = 0; i < candidates.length; i++){
+      // add the candidate to your partial solution and update the hash set to keep track of included candidates
+      partialSolution = partialSolution.concat(candidates[i]);
+      alreadyIndcluded.add(candidates[i]);
+      // check if a complete solution could be built with the current candidate included in the partial solution
+      backtrack(partialSolution, alreadyIndcluded, searchSpace.slice(candidates[i].length));
+      // backtrack on the current selection and restore the state to allow for selection of the next candidate;
+      partialSolution =  partialSolution.slice(0, partialSolution.length - candidates[i].length);
+      alreadyIndcluded.delete(candidates[i]);
+    } 
+  }
+  // generate candidates
+  function createCandidates (string, set){
+    let res = [];
+    let trav = 1;
+    while(trav <= string.length){
+      let str = string.slice(0, trav);
+      if(!set.has(str)){
+        res.push(str);
+      }
+      trav++;
+    }
+    return res;
+  }
+}
 
 function getPermutation(n , k) {
   {
