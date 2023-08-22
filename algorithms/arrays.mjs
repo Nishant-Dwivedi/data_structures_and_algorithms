@@ -1,4 +1,4 @@
-// QUESTIONS SOLVED (11)
+// QUESTIONS SOLVED (12)
 
 // quickSort([1,2,5,3,6,9], 0, 5)                             //standard quickSort Algorithm
 // mergeSort([2,5,1,10,11])                                   //standard mergeSort Algorithm
@@ -11,8 +11,32 @@
 // longestConsecutive([100,4,200,1,3,2])                      //LC 128 medium *
 // findDuplicates([4,3,2,7,8,2,3,1])                          //LC 442 medium
 // missingNumber([9,6,7,2,3,5,8,0,4])                         //LC 268 easy
-
+// majorityElement([2,2,1,1,1,2,2])                           //lc 169 easy
 // ..................................................................................................................................................................................
+
+function majorityElement(nums){
+    nums.sort((a,b) => a - b);
+    let curr_num;
+    let num_frq = 0;
+    for(let i = 0; i < nums.length; i++){
+        if(nums[i] == curr_num){
+            num_frq++;
+            if(num_frq > nums.length/2){
+                console.log(curr_num);
+                return curr_num;
+            }
+        }
+        else{
+            if(num_frq > nums.length/2){
+                console.log(curr_num);
+                return curr_num;
+            }
+            num_frq = 1;
+            curr_num = nums[i];
+        }
+    }
+}
+
 function quickSort(arr, left, right){
     // if left and right pointers are equal or have crossed each other, we have no more partitioning left to do
     if(left >= right){

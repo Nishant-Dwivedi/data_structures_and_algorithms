@@ -59,22 +59,80 @@
 // similarly, when you minimize a window, once you find a valid window, addition of every new eligible element from the right would allow some shrinkage from the left; But you only remove an element from the left if its removal would not make your window invalid; if it does, your window cant be shrinked futher
 // ................................................................................................................................................................................................................
 
-// QUESTIONS SOLVED: 11
+// QUESTIONS SOLVED: 12
 // maxProfit([7,6,4,3,1])                            // LC:121;   easy
 // lengthOfLongestSubstring("abba")                  // LC:3;     medium
 // checkInclusion("ky", "ainwkckifykxlribaypk")      // LC:567;   medium   #good question
 // minSubArrayLen(15, [5,1,3,5,10,7,4,9,2,8])        // LC:209;   medium
 // totalFruit([1,2,3,2,2])                           // LC:904;   medium
-// longestOnes([0,0,1,1,0,0,1,1,1,0,1,1,0,1,1,1], 3) // LC: 1004; medium
+// longestOnes([0,0,1,1,0,0,1,1,1,0,1,1,0,1,1,1], 3) // LC:1004;  medium
 // longestSubarray([0,1,1,1,0,1,1,0,1])              // LC:1493;  medium
 // maxVowels("aeiou", 2)                             // LC:1456;  medium
 // minWindow("baAaABabBba", "AbbB")                  // LC:76;    hard     #good question 
 // characterReplacement("JSDSSMESSTR", 2)            // LC:424;   medium   #good question
-// numSubarrayProductLessThanK([1,2,3], 0)           //LC:713;    medium   #faster solution when solved sliding window when compared with two pointers
+// numSubarrayProductLessThanK([1,2,3], 0)           // LC:713;   medium   #faster solution when solved sliding window when compared with two pointers
+// findAnagrams("cbaebabacd", "abc")                 // lc:438;   medium   #good question; collapsing sw
 
 // ................................................................................................................................................................................................................
 import queue from "../data structures/queue.mjs"
 //.................................................................................................................................................................................................................
+
+function findAnagrams(s, p){
+    // generate a frequency map
+    let frq_map = new Map();
+    for(let i = 0; i < p.length; i++){
+        let char = p.charAt(i);
+        if(frq_map.has(char)){
+            frq_map.set(char, frq_map.get(char) + 1);
+        }
+        else {
+            frq_map.set(char, 1);
+        }
+    }
+    // initialise window attributes
+    let left = 0;
+    let right = 0;
+    let res = [];
+    while(right < s.length){
+        let char = s.charAt(right);
+        // if we encounter an element not present in the frequency map, it renders our current window invalid and we move to the next element
+        if(!frq_map.has(char)){
+            let trav = left;
+            // update the state while collapsing the window
+            while(trav < right){
+                let tmp = s.charAt(trav);
+                if(frq_map.has(tmp)){
+                    frq_map.set(tmp, frq_map.get(tmp) + 1)
+                    trav++;
+                }
+            }
+            right++;
+            left = right;
+            continue;
+        }
+        // if the current element's freq is zero; we gotta shrink our window until it can be included again. i.e
+        if(frq_map.get(char) == 0){
+            // shrink
+            let trav = left;
+            // while the frequency map does'nt have space for one more instance of the current char, we keep removing elements
+            while(frq_map.get(char) != 1){
+                let tmp = s.charAt(trav);
+                frq_map.set(tmp, frq_map.get(tmp)+1);
+                trav++;
+            }
+            left = trav;
+        }
+        // include the element
+        frq_map.set(char, frq_map.get(char) - 1);
+        // check if our valid window is complete
+        if(right-left+1 == p.length){
+            res.push(left);
+        }
+        right++;
+    }
+    console.log(res);
+    return res;
+}
 
 function numSubarrayProductLessThanK(nums, k){
     // initialize window attributes
