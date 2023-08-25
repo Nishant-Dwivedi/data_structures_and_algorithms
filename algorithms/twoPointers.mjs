@@ -1,9 +1,7 @@
-// two pointers technique is fairly straightforward. what we get is a problem statement that would normally require us to use a nested loop inside another loop which would have a time complexity of the order O(n^2). what we try to do is change our algorithm such that it becomes the order of O(n*logn) by sorting the input first and then finding a solution in one sweep. there can be variants in which we turn O(n^3) algorithms to O(n^2).
-
 // ..................................................................................................................................................................................
 // QUESTIONS SOLVED 9
 // threeSum([-1,0,1,2,-1,-4,-2,-3,3,0,4])                                 LC:15;  medium
-// threeSumClosest([-1,2,1,-4], 1)                                        LC:16;  medium
+// threeSumClosest([-1,2,1,-4], 1)                                        LC:16;  medium *
 // maxArea([2,3,4,5,18,17,6])                                             LC:11;  medium *
 // sortColors([2,0,2,1,1,0])                                              LC:75;  medium
 // isSubsequence("axc", "ahbgdc")                                         LC:392; easy
@@ -288,7 +286,7 @@ function threeSumClosest(nums, target){
     let currentMinDistanceFromTarget = Number.MAX_VALUE;
     let sum;
     let result;
-    // gotta skip dupplicates
+    // gotta skip duplicates
     let lastPicked;
     // first pointer is the index of the outer loop; this tracks  the first element of the combination
     for(let i = 0; i < nums.length; i++){
