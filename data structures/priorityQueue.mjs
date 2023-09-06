@@ -3,10 +3,15 @@ export default class priorityQueue {
     #heap_end_index = 0;
     #comparator_func;
     constructor (input, comparator){
-        if(input != undefined && typeof(input) == "object" && input.length != 0 && comparator != undefined){
+        if(comparator != undefined){
+            // init an empty priority queue if input isn't a valid array of elements
+            if(typeof(input) != "object" || input.length == 0 || input == undefined){
+                input = [];
+            }
              // init heap to be the input array
              this.#heap_arr = Array.from(input);
              this.#heap_end_index = this.#heap_arr.length-1;
+            //  our pq will throw an error without a comparator.
              this.#comparator_func = comparator;
             // build a heap
             this.#build_heap();
@@ -19,7 +24,7 @@ export default class priorityQueue {
     }
     // helper: builds a heap with highest priority item at the top(max heap)
     #build_heap(){
-        // heapify the input array
+        //#heapify the input array
         for(let i = Math.floor(this.#heap_arr.length/2) - 1; i >= 0; i--){
             this.#heapify(i);
         }
@@ -62,7 +67,7 @@ export default class priorityQueue {
             let tmp = this.#heap_arr[index];
             this.#heap_arr[index] = this.#heap_arr[higher_priority_child_index];
             this.#heap_arr[higher_priority_child_index] = tmp;
-             // now recursively heapify heaps rooted at children nodes
+             // now recursively#heapify heaps rooted at children nodes
             this.#heapify(left);
             this.#heapify(right);
         
@@ -71,13 +76,13 @@ export default class priorityQueue {
 
     // gets the highest priority item
     get get_priority_element(){
-        console.log(`heap: ${this.#heap_arr}, priority element: ${this.#heap_arr[0]}, size: ${this.#heap_end_index+1}`);
+        // console.log(`heap: ${this.#heap_arr}, priority element: ${this.#heap_arr[0]}, size: ${this.#heap_end_index+1}`);
         return this.#heap_arr[0];
     }
 
     // returns the current heap size
     get size(){
-        console.log(`heap: ${this.#heap_arr},size: ${this.#heap_end_index+1}`);
+        // console.log(`heap: ${this.#heap_arr},size: ${this.#heap_end_index+1}`);
         return this.#heap_end_index + 1;
     }
 
@@ -93,7 +98,7 @@ export default class priorityQueue {
         this.#heap_arr[this.#heap_end_index] = null;
         // decrement the heap array's end pointer
         this.#heap_end_index--;
-        // heapify the root node
+        //#heapify the root node
         this.#heapify(0);
         return tmp;
     }
@@ -106,11 +111,11 @@ export default class priorityQueue {
                 this.#heap_end_index++;
                 // insert the new element at the left most empty node of the last level(the end of the array)
                 this.#heap_arr[this.#heap_end_index] = value;
-                // undo the heap property violation if there is one after inserting the new node(heapify upwards);
+                // undo the heap property violation if there is one after inserting the new node#heapify upwards);
                 let current_index = this.#heap_end_index;
                 let parent_index = Math.floor((current_index-1)/2);
-                // while the higher priority of a parent node isn't restored, keep swapping with child 
-                while(this.#heap_arr[parent_index] != this.#comparator_func(this.#heap_arr[current_index], this.#heap_arr[parent_index])){
+                // while the higher priority of a parent node isn't restored or and we haven't reached the root node already, keep swapping with child if needed
+                while(current_index > 0 && (this.#heap_arr[parent_index] != this.#comparator_func(this.#heap_arr[current_index], this.#heap_arr[parent_index]))){
                     let temp = this.#heap_arr[parent_index];
                     this.#heap_arr[parent_index] = this.#heap_arr[current_index];
                     this.#heap_arr[current_index] = temp;
@@ -124,10 +129,15 @@ export default class priorityQueue {
                 this.#heap_arr.push(value);
                 // increment the heap end pointer to reflect the increse in size
                 this.#heap_end_index++;
-                // undo the heap property violation if there is one after inserting the new node(heapify upwards)
+                // if the current element is the first element in the heap, no property violation can happen
+                if(this.#heap_end_index == 0){
+                    return;
+                }
+                // undo the heap property violation if there is one after inserting the new node#heapify upwards)
                 let current_index = this.#heap_end_index;
                 let parent_index = Math.floor((current_index-1)/2);
-                while(this.#heap_arr[parent_index] != this.#comparator_func(this.#heap_arr[current_index], this.#heap_arr[parent_index])){
+                // while the higher priority of a parent node isn't restored or and we haven't reached the root node already, keep swapping with child if needed
+                while(current_index > 0 && (this.#heap_arr[parent_index] != this.#comparator_func(this.#heap_arr[current_index], this.#heap_arr[parent_index]))){
                     let temp = this.#heap_arr[parent_index];
                     this.#heap_arr[parent_index] = this.#heap_arr[current_index];
                     this.#heap_arr[current_index] = temp;
