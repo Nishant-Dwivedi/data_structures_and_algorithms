@@ -1,3 +1,4 @@
+// Priority queue (max_heap)
 export default class priorityQueue {
     #heap_arr; 
     #heap_end_index = 0;

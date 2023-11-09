@@ -1,6 +1,6 @@
 import queue from "../data structures/queue.mjs"
 // .....................................................................................................................................................................
-// Questions Solved: 15
+// Questions Solved: 20
 // orangesRotting([[2,1,1],[0,1,1],[1,0,1]])                                                                                            //lc:994  medium *
 // numIslands(
 //     [["1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","0","0","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","0","0","0","0","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1"]]
@@ -8,7 +8,7 @@ import queue from "../data structures/queue.mjs"
 // longestIncreasingPath([[10,19,5,16,3],[10,13,4,8,15],[5,12,9,15,19],[2,10,17,13,16],[3,4,11,15,12],[3,10,1,5,17],[12,17,8,4,9]])     //lc:329  hard
 // accountsMerge( [["Gabe","Gabe0@m.co","Gabe3@m.co","Gabe1@m.co"],["Kevin","Kevin3@m.co","Kevin5@m.co","Kevin0@m.co"],["Ethan","Ethan5@m.co","Ethan4@m.co","Ethan0@m.co"],["Hanzo","Hanzo3@m.co","Hanzo1@m.co","Hanzo0@m.co"],["Fern","Fern5@m.co","Fern1@m.co","Fern0@m.co"]])                    //lc:721  medium *
 // maxAreaOfIsland([[1,1,0,0,0],[1,1,0,0,0],[0,0,0,1,1],[0,0,0,1,1]])                                                                   //lc:695  medium
-// updateMatrix([[0,0,0],[0,1,0],[0,0,0]]) tle on brute force
+// updateMatrix([[0,0,0],[0,1,0],[0,0,0]]) tle on brute force                                                                           //lc:542  medium *
 // pacificAtlantic([[13],[4],[19],[10],[1],[11],[5],[17],[3],[10],[1],[0],[1],[4],[1],[3],[6],[13],[2],[16],[7],[6],[3],[1],[9],[9],[13],[10],[9],[10],[6],[2],[11],[17],[13],[0],[19],[7],[13],[3],[9],[2]])                                                                                      //lc:471  medium *
 // shortestBridge([[0,1,0],[0,0,0],[0,0,1]])                                                                                            //lc:934  medium *
 // numOfMinutes(11,4,[5,9,6,10,-1,8,9,1,9,3,4], [0,213,0,253,686,170,975,0,261,309,337])                                                //lc:1376 medium
@@ -19,8 +19,491 @@ import queue from "../data structures/queue.mjs"
 // minMutation("AACCGGTT", "AAACGGTA", ["AACCGATT","AACCGATA","AAACGATA","AAACGGTA"])                                                   //lc:433  medium *
 // eventualSafeNodes([[1,2],[2,3],[5],[0],[5],[],[]])                                                                                   //lc:802  medium *
 // closedIsland([[1,1,1,1,1,1,1,0],[1,0,0,0,0,1,1,0],[1,0,1,0,1,1,1,0],[1,0,0,0,0,1,0,1],[1,1,1,1,1,1,1,0]])                            //lc:1254 medium
+// findSmallestSetOfVertices(3, [[1,2],[1,0],[0,2]])                                                                                    //lc:1557 medium
+// isBipartite([[1,2,3],[0,2],[0,1,3],[0,2]])                                                                                           //lc:785  medium *
+// findMinHeightTrees(4, [[1,0],[1,2],[1,3]])                                                                                           //lc:310  medium *
+// findOrder(7, [[1,0],[0,3],[0,2],[3,2],[2,5],[4,5],[5,6],[2,4]])                                                                      //lc:210  medium *
+// checkIfPrerequisite(3, [[1,2],[1,0],[2,0]], [[1,0],[1,2]])                                                                           //lc:1462 medium *
+// calcEquation([["a","b"],["b","c"]], [2.0,3.0], [["a","c"],["b","a"],["a","e"],["a","a"],["x","x"]])                                  //lc:399  medium
 // .....................................................................................................................................................................
+
+function calcEquation (equations, values, queries){
+    // build an adj list(undirected) and the weight map
+    let adj_list = new Map();
+    let weight_map = new Map();
+    for(let i = 0; i < equations.length; i++){
+        if(adj_list.has(equations[i][0])){
+            adj_list.get(equations[i][0]).push(equations[i][1]);
+        }
+        else{
+            adj_list.set(equations[i][0],[equations[i][1]]);
+        }
+        if(adj_list.has(equations[i][1])){
+            adj_list.get(equations[i][1]).push(equations[i][0]);
+        }
+        else{
+            adj_list.set(equations[i][1], [equations[i][0]]);
+        }
+        // add the edge weights
+        weight_map.set(`${equations[i][0]},${equations[i][1]}`, values[i]);
+        weight_map.set(`${equations[i][1]},${equations[i][0]}`, 1/values[i]);
+    }
+    // solve queries
+    let visited = new Set();
+    let res = [];
+    let prod = -1;
+    for(let i = 0; i < queries.length; i++){
+        if(adj_list.has(`${queries[i][0]}`) == false){
+            res[i] = -1;
+            continue;
+        }
+        dfs(`${queries[i][0]}`, `${queries[i][1]}`, 1);
+        res[i] = prod;
+        prod = -1;
+        visited.clear()
+    }
+    
+    console.log(res);
+    return res;
+
+    // helper
+    function dfs(index, target, curr_product){
+        visited.add(index);
+        if(index == target){
+            prod = curr_product;
+            return
+        }
+        let adj = adj_list.get(index);
+        if(!adj){
+            return
+        }
+        for(let i = 0; i < adj.length; i++){
+            if(visited.has(adj[i]) != true){
+                visited.add(adj[i]);
+                dfs(adj[i], target, curr_product*weight_map.get(`${index},${adj[i]}`));
+            }
+        }
+    }
+}
+
+function checkIfPrerequisite(numCourses, prerequisites, queries){
+    // build an adj list
+    let adj_list = new Map();
+    let dependencies = new Map();
+    for(let i = 0; i <prerequisites.length; i++){
+        if(adj_list.has(prerequisites[i][0])){
+            adj_list.get(prerequisites[i][0]).push(prerequisites[i][1]);
+        }
+        else{
+            adj_list.set(prerequisites[i][0], [prerequisites[i][1]]);
+        }
+    }
+    // get the top ordering of nodes
+    let visited = new Set();
+    let topological = [];
+    for(let i = 0; i < numCourses; i++){
+        if(visited.has(i) != true){
+            dfs(i);
+        }
+    }
+    topological = topological.reverse();
+    // clear visited for the second dfs that will populate the dep map
+    visited.clear();
+    for(let i = 0; i < topological.length; i++){
+        if(visited.has(topological[i]) != true){
+            // we pass in a new dep set to our second dfs function that will populate the dep map
+            dfs_dep(topological[i]);
+        }
+    }
+    let res = []
+    for(let i = 0; i < queries.length; i++){
+        if(dependencies.get(queries[i][0]).includes(queries[i][1]) == true){
+            res.push(true);
+        }
+        else{
+            res.push(false)
+        }
+    }
+    console.log(dependencies, res);
+    return res
+
+    // helper; populates the dependency map once top sorted order is discovered
+    function dfs_dep(index){
+        visited.add(index);
+        let adj = adj_list.get(index);
+        // if the curr node is a root node, add an empty arr as its dependency in the dependency map and return its dep
+        if(!adj){
+            dependencies.set(index, []);
+            return [];
+        }
+        
+        // an internal node's dependencies are all its adj nodes, and their dependencies combined
+        let curr_dep = [];
+        for(let i = 0; i < adj.length; i++){
+            // if an adj node is already visited, 
+            if(visited.has(adj[i]) == true){
+                // get its dependencies and add them to current node's dependencies
+                let adj_dep = dependencies.get(adj[i]); 
+                for(let j = 0; j < adj_dep.length; j++){
+                    if(curr_dep.includes(adj_dep[j]) != true){
+                        curr_dep.push(adj_dep[j]);
+                    }
+                }
+                // add the adj node itself as a dependency of the current node if its not already present
+                curr_dep.includes(adj[i]) != true ? curr_dep.push(adj[i]) : null;
+            }
+            // else for an unvisited node, 
+            else{
+                // recurse and add the found dependencies
+                let adj_dep = dfs_dep(adj[i]);
+                for(let j = 0; j < adj_dep.length; j++){
+                    if(curr_dep.includes(adj_dep[j]) != true){
+                        curr_dep.push(adj_dep[j]);
+                    }
+                }
+                // add the adj node itself as a dependency of the current node if its not already present
+                curr_dep.includes(adj[i]) != true ? curr_dep.push(adj[i]) : null;
+            }
+        }
+        // post-visit; add the internal node's dependencies to the dependency map and return it
+        dependencies.set(index, Array.from(curr_dep));
+        return curr_dep;
+    }
+    // helper; populates the topological array in post order for topologically sorting them by reversing it later
+    function dfs(index){
+        // pre-visit
+        visited.add(index);
+        let adj = adj_list.get(index);
+        // if current node is a leaf node, add it to the topological ordering and exit
+        if(!adj){
+            topological.push(index);
+            return
+        }
+        // visit
+        for(let i = 0; i < adj.length; i++){
+            if(visited.has(adj[i]) != true){
+                visited.add(adj[i]);
+                dfs(adj[i]);
+            }
+        }
+        // post-visit
+        topological.push(index);
+    }
+}
+
+function findOrder(n, prerequisites){
+    // build an adj list
+    let adj_list = new Map();
+    for(let i = 0; i < prerequisites.length; i++){
+        if(adj_list.has(prerequisites[i][0])){
+            adj_list.get(prerequisites[i][0]).push(prerequisites[i][1]);
+        }
+        else{
+            adj_list.set(prerequisites[i][0], [prerequisites[i][1]]);
+        }
+    }
+    let topological_order = [];
+    let is_topo_order_possible = true;
+    let visited = new Set();
+    for(let i = 0; i < n; i++){
+        if(is_topo_order_possible == false){
+            break;
+        }
+        if(visited.has(i) != true){
+            let path = [];
+            dfs(i, path);
+        }
+    }
+    if(is_topo_order_possible == false){
+        topological_order = []
+    }
+    console.log(topological_order);
+    return topological_order
+    // helper
+    function dfs(index, array_path){
+        // pre-visit
+        visited.add(index);
+        // add current node to the path
+        array_path.push(index);
+        let adj = adj_list.get(index);
+        if(!adj){
+            // if a node is a leaf node, add it to topological ordering and remove it from the path(internal nodes are removed in the post-visit phase, leaf node will never reach that phase so we remove them from the path here in the base case)
+            topological_order.push(index);
+            array_path.pop()
+            return
+        }
+        // visit
+        for(let i = 0; i < adj.length; i++){
+            // if an already visited node
+            if(visited.has(adj[i])){
+            //    is also present in the path array, the edge from current node to this adj node is a back edge and there is a cycle present in the graph
+                if(array_path.includes(adj[i]) == true){
+                    is_topo_order_possible = false;
+                    break;
+                }
+            }
+            // for non-visted nodes, recurse
+            if(visited.has(adj[i]) != true){
+                visited.add(adj[i]);
+                dfs(adj[i], array_path);
+            }
+        }
+
+        // post-visit
+        // add node to the topological order
+        topological_order.push(index);
+        // and remove it from the path arr
+        array_path.pop()
+    }
+}
+
+function findMinHeightTrees(n, edges){
+    // build an adj list
+    let adj_list = new Map();
+    for(let i = 0; i < edges.length; i++){
+        if(adj_list.has(edges[i][0])){
+            adj_list.get(edges[i][0]).push(edges[i][1]);
+        }
+        else{
+            adj_list.set(edges[i][0], [edges[i][1]]);
+        }
+        if(adj_list.has(edges[i][1])){
+            adj_list.get(edges[i][1]).push(edges[i][0]);
+        }
+        else{
+            adj_list.set(edges[i][1], [edges[i][0]]);
+        }
+    }
+    // find the first leaf node farthest away from any node in the graph; this leaf node will be the terminating node of some longest path in the graph; 
+    // perform dfs on the leaf node to find the farthest leaf node from it;
+    let visited = new Set();
+    // the first dfs will return one leaf node; we will perform another dfs on this returned node to generate the longest path
+    let leaf_node = dfs(0);
+    visited.clear()
+    let path = dfs_path(leaf_node[0]);
+    let center_nodes = [];
+    if(path.length % 2 == 0){
+        center_nodes.push(path[1][Math.floor(path[1].length/2)]);
+        center_nodes.push(path[1][Math.floor(path[1].length/2) - 1]);
+    }
+    else{
+        center_nodes.push(path[1][Math.floor(path[1].length/2)])
+    }
+    console.log(path[1], center_nodes);
+    return center_nodes;
+
+    // helper; generates the longest path when given one end of it.
+    function dfs_path(index){
+        // pre-visit
+        visited.add(index);
+        let adj = adj_list.get(index);
+        // if current node is a leaf node, return its dist from itself and a path array containing just itself in an array
+        if(adj.length == 1 && visited.has(adj[0]) == true){
+            return [0, [index]];
+        }
+        // init an array with dist = -1 and null as path arr
+        let longest = [-1, null];
+        for(let i = 0; i < adj.length; i++){
+            if(visited.has(adj[i]) != true){
+                visited.add(adj[i]);
+                let res = dfs_path(adj[i]);
+                if(res[0] > longest[0]){
+                    // res will get garbage collected once the for loop ends
+                    longest = res;
+                }
+            }
+        }
+        // post visit; increment the longest dist by 1 and push the current node to the longest path
+        longest[0]++;
+        longest[1].push(index);
+        return longest;
+    }
+    // helper; returns the farthest node away from a starting node and the distance in a tuple
+    function dfs(index){
+        // previsit
+        visited.add(index);
+        let adj = adj_list.get(index);
+        // if the current node is a leaf node(it has just one internal node in its adj list and that internal node is already visited), return its distance from itself (0) and the node value in a tuple
+        if(adj.length == 1 && visited.has(adj[0]) == true){
+            return[index, 0];
+        }
+
+        // visit adj; find the adj vertex through which the the path to a leaf node is largest in length
+        let longest_dist = -1;
+        let longest_dist_leaf;
+        for(let i = 0; i < adj.length; i++){
+            if(visited.has(adj[i]) == false){
+                visited.add(adj[i]);
+                let adj_tuple = dfs(adj[i]);
+                // if the length of the path through the adj vertex is larger than the current largest path length, update the largest path length and the leaf node 
+                if(adj_tuple[1] > longest_dist){
+                    longest_dist = adj_tuple[1];
+                    longest_dist_leaf = adj_tuple[0];
+                }
+            }
+        }
+        // post visit; add 1 to the path length (edge from the current node to the adj node) and return the path length along with the corresponding leaf node at which the path ends
+        return [longest_dist_leaf, longest_dist+1];
+    }    
+}
  
+function isBipartite(graph){
+    let red = new Set();
+    let blue = new Set();
+    let current_col = "red";
+    let visited = new Set();
+    let is_graph_bipartite = true;
+    for(let i = 0; i < graph.length; i++){
+        if(visited.has(i) != true){
+            dfs(i);
+        }
+    }
+    console.log(is_graph_bipartite);
+    return is_graph_bipartite;
+
+    function dfs(index){
+        visited.add(index);
+        if(current_col == "red"){
+            red.add(index);
+        }
+        else{
+            blue.add(index);
+        }
+
+        let adj = graph[index];
+        if(adj.length == 0){
+            current_col = current_col == "red" ? "blue" : "red";
+            return;
+        }
+        for(let i = 0; i < adj.length; i++){
+            // if an adj, already visited vertex is in the same col set as the current vertex, the graph is not bipartite
+            if(visited.has(adj[i]) == true){
+                if((current_col == "red" && red.has(adj[i]) == true) || (current_col == "blue" && blue.has(adj[i]) == true)){
+                    is_graph_bipartite = false;
+                    break;
+                }
+            }
+            else{
+                visited.add(adj[i]);
+                // swap current color for the next adj node
+                current_col = current_col == "red" ? "blue" : "red";
+                dfs(adj[i]);
+            }
+        }
+        // post-visit; swap color back to what it was for the current node 
+        current_col = current_col == "red" ? "blue" : "red"; 
+    }
+}
+
+function findSmallestSetOfVertices(n, edges){
+    // build an adj list
+    let adj_list = new Map();
+    for(let i = 0; i < edges.length; i++){
+        if(adj_list.has(edges[i][0])){
+            adj_list.get(edges[i][0]).push(edges[i][1]);
+        }
+        else{
+            adj_list.set(edges[i][0], [edges[i][1]]);
+        }
+    }
+    let res = new Set();
+    let visited = new Set();
+    for(let i = 0; i < n; i++){
+        if(visited.has(i) != true){
+            dfs(i);
+            res.add(i);
+        }
+    }
+    res = Array.from(res);
+    console.log(res);
+    return res;
+
+    // helper;
+    function dfs(index){
+        visited.add(index);
+        let adj = adj_list.get(index);
+        if(!adj){
+            return
+        }
+        for(let i = 0; i <adj.length; i++){
+            // if we find an adj vertex that is in the res set, it means it's reachable from the current vertex and thus, all vertices reachable from it are also reachable from the current vertex; so we remove it from the set; the current vertex will be added in the main loop
+            if(res.has(adj[i])){
+                res.delete(adj[i]);
+            }
+            if(visited.has(adj[i]) != true){
+                visited.add(adj[i]);
+                dfs(adj[i]);
+            }
+        }
+    }
+}
+
+function updateMatrix(mat){
+    let q = new queue();
+    // enqueue all the 0's in the first lvl of the queue;
+    for(let i = 0; i < mat.length; i++){
+        for(let j = 0; j < mat[0].length; j++){
+            if(mat[i][j] == 0){
+                q.enqueue(`${i},${j}`);
+            }
+        }
+    }
+    let dist = -1;
+    let visited = new Set();
+    while(q.isEmpty() != true){
+        let nodes_in_curr_lvl = q.size;
+        // at every lvl, the distance of 1's from their nearest 0 gets increased by one
+        dist++;
+        for(let i = 0; i < nodes_in_curr_lvl; i++){
+            let front = q.front;
+            q.dequeue();
+            visited.add(front);
+            let split_ind = front.indexOf(",");
+            let row = Number(front.slice(0, split_ind));
+            let col = Number(front.slice(split_ind + 1));
+            // if the current vertex is a 1, change its value to its distance from the nearest 0;
+            if(mat[row][col] == 1){
+                mat[row][col] = dist;
+            }
+            // enque adjacent vertices
+            let adj = get_adj(front);
+            for(let i = 0; i < adj.length; i++){
+                if(visited.has(adj[i]) != true){
+                    visited.add(adj[i]);
+                    q.enqueue(adj[i]);
+                }
+            }
+        }
+    }
+    console.log(mat);
+    return mat;
+
+    function get_adj(index){
+        let split_ind = index.indexOf(",");
+        let row = Number(index.slice(0, split_ind));
+        let col = Number(index.slice(split_ind + 1))
+        let adj_arr = [];
+        // observe how visited is not queried here to check if an index is visited or not. The dfs function will skip visited ind anyway.
+        // push the top element's index
+        if(row != 0 && mat[row-1][col] == 1){
+            adj_arr.push(`${row-1},${col}`);
+        }
+        // push the right element's index
+        if(col != mat[0].length-1 && mat[row][col+1] == 1){
+            adj_arr.push(`${row},${col+1}`)
+        }
+        // push the bottom element's index
+        if(row != mat.length-1 && mat[row+1][col] == 1){
+            adj_arr.push(`${row+1},${col}`)
+        }
+        // push the left element's index
+        if(col != 0 && mat[row][col-1] == 1){
+            adj_arr.push(`${row},${col-1}`)
+        }
+        return adj_arr;
+    }
+}
+
 function closedIsland(grid){
     let visited = new Set();
     for(let i = 0; i < grid.length; i++){
@@ -849,92 +1332,92 @@ function pacificAtlantic (heights){
         return adj_arr;
     }
 }
+// brute force: TLE
+// function updateMatrix(mat){
+//     let q = new queue();
+//     let visited  = new Set();
+//     for(let i = 0; i < mat.length; i++){
+//         for(let j = 0; j < mat[0].length; j++){
+//             if(mat[i][j] != 0){
+//                 let index = `${i},${j}`;
+//                 let dist = bfs(index);
+//                 mat[i][j] = dist;
+//                 // empty the visited set and the queue after cal min dist; since we exit out of bfs as soon as a 0 is found in a level, we have leftover  nodes that need to be removed
+//                 visited.clear();
+//                 while(q.isEmpty() == false){
+//                     q.dequeue();
+//                 }
+//             }
+//         }
+//     }
+//     console.log(mat);
+//     return mat;
 
-function updateMatrix(mat){
-    let q = new queue();
-    let visited  = new Set();
-    for(let i = 0; i < mat.length; i++){
-        for(let j = 0; j < mat[0].length; j++){
-            if(mat[i][j] != 0){
-                let index = `${i},${j}`;
-                let dist = bfs(index);
-                mat[i][j] = dist;
-                // empty the visited set and the queue after cal min dist; since we exit out of bfs as soon as a 0 is found in a level, we have leftover  nodes that need to be removed
-                visited.clear();
-                while(q.isEmpty() == false){
-                    q.dequeue();
-                }
-            }
-        }
-    }
-    console.log(mat);
-    return mat;
+//     function bfs(index){
+//         let min_dist = 0;
+//         let  exit_outer_loop = false;
+//         q.enqueue(index);
+//         while(q.isEmpty() != true && exit_outer_loop == false){
+//             // get the nodes in the current lvl; we'll do level by level trav of the bfs tree
+//             let nodes_in_curr_lvl = q.size;
+//             // if we have a zero in the current lvl, we have found the nearest zero
+//             let zero_found_in_curr_lvl = false;
+//             for(let i = 0; i < nodes_in_curr_lvl; i++){
+//                 // dequeue the front node and mark it visited
+//                 let front = q.front;
+//                 visited.add(front);
+//                 q.dequeue();
+//                 let split_ind = front.indexOf(",");
+//                 let row = Number(front.slice(0, split_ind));
+//                 let col = Number(front.slice(split_ind+1));   
+//                 // if this front element of the queue is a zero, we can exit early as we have our min dist
+//                 if(mat[row][col] == 0){
+//                     zero_found_in_curr_lvl = true;
+//                     exit_outer_loop = true;
+//                     break;
+//                 }
+//                 // we queue adj elements for the next lvl if this entire level doesn't have a zero; if we find a zero early though, don't forget to empty the queue;
+//                 let adj = get_adj(front, mat);
+//                 for(let j = 0; j < adj.length; j++){
+//                     if(visited.has(adj[j]) == false){
+//                         q.enqueue(adj[j]);
+//                     }
+//                 }
+//                 // if at the last node of the level we still haven't encountered a 0, this entire lvl has no zero; we increment the min dist
+//                 if(i == nodes_in_curr_lvl-1 && zero_found_in_curr_lvl == false){
+//                     min_dist++;
+//                 }
+//             }
+//         }
+//         // q could have been emptied here instead of the main loop
+//         return min_dist;
+//     }
 
-    function bfs(index){
-        let min_dist = 0;
-        let  exit_outer_loop = false;
-        q.enqueue(index);
-        while(q.isEmpty() != true && exit_outer_loop == false){
-            // get the nodes in the current lvl; we'll do level by level trav of the bfs tree
-            let nodes_in_curr_lvl = q.size;
-            // if we have a zero in the current lvl, we have found the nearest zero
-            let zero_found_in_curr_lvl = false;
-            for(let i = 0; i < nodes_in_curr_lvl; i++){
-                // dequeue the front node and mark it visited
-                let front = q.front;
-                visited.add(front);
-                q.dequeue();
-                let split_ind = front.indexOf(",");
-                let row = Number(front.slice(0, split_ind));
-                let col = Number(front.slice(split_ind+1));   
-                // if this front element of the queue is a zero, we can exit early as we have our min dist
-                if(mat[row][col] == 0){
-                    zero_found_in_curr_lvl = true;
-                    exit_outer_loop = true;
-                    break;
-                }
-                // we queue adj elements for the next lvl if this entire level doesn't have a zero; if we find a zero early though, don't forget to empty the queue;
-                let adj = get_adj(front, mat);
-                for(let j = 0; j < adj.length; j++){
-                    if(visited.has(adj[j]) == false){
-                        q.enqueue(adj[j]);
-                    }
-                }
-                // if at the last node of the level we still haven't encountered a 0, this entire lvl has no zero; we increment the min dist
-                if(i == nodes_in_curr_lvl-1 && zero_found_in_curr_lvl == false){
-                    min_dist++;
-                }
-            }
-        }
-        // q could have been emptied here instead of the main loop
-        return min_dist;
-    }
+//     function get_adj (index, matrix){
+//         let split_ind = index.indexOf(",");
+//         let row = Number(index.slice(0, split_ind));
+//         let col = Number(index.slice(split_ind + 1))
+//         let adj_arr = [];
 
-    function get_adj (index, matrix){
-        let split_ind = index.indexOf(",");
-        let row = Number(index.slice(0, split_ind));
-        let col = Number(index.slice(split_ind + 1))
-        let adj_arr = [];
-
-        // push the top element's index
-        if(row != 0 && visited.has(`${row-1},${col}`) == false){
-            adj_arr.push(`${row-1},${col}`);
-        }
-        // push the right element's index
-        if(col != matrix[0].length-1 && visited.has(`${row},${col+1}`) == false){
-            adj_arr.push(`${row},${col+1}`)
-        }
-        // push the bottom element's index
-        if(row != matrix.length-1 && visited.has(`${row+1},${col}`) == false){
-            adj_arr.push(`${row+1},${col}`)
-        }
-        // push the left element's index
-        if(col != 0 && visited.has(`${row},${col-1}`)==false){
-            adj_arr.push(`${row},${col-1}`)
-        }
-        return adj_arr;
-    }
-}
+//         // push the top element's index
+//         if(row != 0 && visited.has(`${row-1},${col}`) == false){
+//             adj_arr.push(`${row-1},${col}`);
+//         }
+//         // push the right element's index
+//         if(col != matrix[0].length-1 && visited.has(`${row},${col+1}`) == false){
+//             adj_arr.push(`${row},${col+1}`)
+//         }
+//         // push the bottom element's index
+//         if(row != matrix.length-1 && visited.has(`${row+1},${col}`) == false){
+//             adj_arr.push(`${row+1},${col}`)
+//         }
+//         // push the left element's index
+//         if(col != 0 && visited.has(`${row},${col-1}`)==false){
+//             adj_arr.push(`${row},${col-1}`)
+//         }
+//         return adj_arr;
+//     }
+// }
 
 function maxAreaOfIsland(grid){
     let visited = new Set();

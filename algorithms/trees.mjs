@@ -517,9 +517,6 @@ function houseRobber3 (node = bst.root) {
         // ⇒ sumExcludingNodeValue ⇒ larger of ((left child’s sumExcludingNodeValue + right child’s sumExcludingNodeValue), (left child’s sumIncludingNodeValue + right child’s sumIncludingNodeValue);
         // ⇒ the parent will take these values and calculate its own sumExcludingNodeValue, and sumIncludingNodeValue;
         // ⇒ once we reach the root node, we will return the larger of th two values.
-        
-        
-    
     }
     if (node == null){
         return null

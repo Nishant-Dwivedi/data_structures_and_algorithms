@@ -18,18 +18,20 @@
   // otherwise, generate candidates for inclusion in your partial solution; 
   // let candidates = generate_candidates(partialSolution, input)
 
-  // include each candidate in your current partial solution, and recursively call backtracking again to see if the new partialSolution is a complete solution
+  // include each candidate in your current partial solution, and recursively call backtracking again to see if the new, extended partialSolution is a complete solution
   // else backtrack on your selection, and consider the other candidates from the generated pool of candidates
   // for each candidate 
     // add candidate to the partialSolution 
     // call backtrack on the new partialSolution and (input - candidate)
-    // remove candidate from partialSolution because the partial solution didn't lead to a complete solution, and try the next candidate and see if that leads to a complete solution.
+    // remove candidate from partialSolution because the partial solution didn't lead to a complete solution, and try the next candidate and see if that leads to a complete solution.(this is the diff, between backtracking and dfs; you are unmarking the node as visited(popping a candidate off of your partial solution is equivalent to marking it off as unvisited and being eligible to be picked up again) after having recursed on it. In dfs you don't do that; a visited node stays visited)
+
+// an important note: most of these questions do not require branch pruning logic, and thereby turn into a simple brute force algortihm. Wikipedia, mentions that the absence of branch pruning logic turns backtracking into a simple bruteforce algo.
 // .................................................................................................................................................................................
 
 import stack from "../data structures/stack.mjs";
 
 // .................................................................................................................................................................................
-// QUESTIONS SOLVED(15)
+// QUESTIONS SOLVED(17)
 
 // printDiceRollCombinations(3);                                     //GFG question: k dice combinations; easy
 // permuteAString("cat");                                            //GFG question: Write a program to print all Permutations of given String; easy
@@ -41,12 +43,144 @@ import stack from "../data structures/stack.mjs";
 // letterCombinations("279")                                         //LC 17;  medium
 // subsets2([4,4,4,1,4])                                             //LC 90;  medium
 // palindromePartition("aabaacbc")                                   //LC 131; medium
-// canPartitionKSubsets([1,1,1,1,2,2,2,2], 4);                       //LC 698; medium *
+// canPartitionKSubsets([10,1,10,9,6,1,9,5,9,10,7,8,5,2,10,8], 11);  //LC 698; medium *
 // generateParenthesis(4);                                           //LC 22;  medium
 // restoreIpAddresses("101023")                                      //LC 93;  medium
 // getPermutation(3,3)                                               //lc 60;  hard
 // maxUniqueSplit("aba")                                             //lc1593: medium
+// getFactors(32)                                                    //premium medium
+// makesquare([3,17,4,1,12,18,19,20,11,17,6,7,16,12,19])             //lc:437  medium *
 // .........................................................................................................................................................................................
+
+function makesquare(matchsticks){
+  // figure out the size of each side
+  let perimeter = matchsticks.reduce((accumulator, current) => {
+    return accumulator + current;
+  }, 0)
+  let side_size = perimeter/4;
+  let is_partition_possible = false;
+  let sum_map = new Map();
+  for(let i = 0; i < 4; i++){
+    sides_map.set(i, []);
+    sum_map.set(i, 0);
+  }
+  backtrack(0);
+  console.log(is_partition_possible);
+  return is_partition_possible;
+
+  function backtrack(index){
+    // we will check two things in base case, if any side has exceeded the permissible side_size and if all side's sum is equal to side_size
+    let side_size_exceeded = false
+    let all_sides_size_equal_to_given = true
+    for(let value of sum_map.values()){
+      if (value > side_size){
+        side_size_exceeded = true;
+        break;
+      }
+      if(value != side_size){
+        all_sides_size_equal_to_given = false;
+      }
+    }
+    // if either set's sum exceeds the side size, we can exit early
+    if(side_size_exceeded == true){
+      return
+    }
+    // if all sets have sum equal to the side size, partition is possible
+    if(all_sides_size_equal_to_given == true){
+      is_partition_possible = true;
+      return
+    }
+    if(index == matchsticks.length){
+      return
+    }
+    // for every matchstick, you can include it in the left side, right side, top side or the bottom side
+    let candidates = [0, 1, 2, 3]
+    for(let i = 0; i < candidates.length; i++){
+      sum_map.set(candidates[i], sum_map.get(candidates[i]) + matchsticks[index]);
+      // recurse
+      backtrack(index+1);
+      // backtrack
+      sum_map.set(candidates[i], sum_map.get(candidates[i]) - matchsticks[index]);
+    }
+  }
+}
+
+function getFactors (n){
+  let res = [];
+  let duplicate_set = new Set();
+  let temp = [];
+  backtrack(temp, n);
+  console.log(res);
+  return res
+
+  // helper; the main backtracking function
+  function backtrack(partialSolution, prod){
+    // if partial solution == complete solution => process solution; 
+    if(prod == 1){
+      // this processing is required because lintcode expects the answer in a particular order; it has nothing to do with backtracking
+      let temp = [...partialSolution]
+      let str = temp.sort().toString();
+      if(duplicate_set.has(str) != true){
+        duplicate_set.add(str);
+        res.push(Array.from(partialSolution));
+      }
+      return
+    }
+    // get available valid candidates; all factors(not just prime) of prod except 1 and n;
+    let candidates = generateCandidates(prod);
+    // for each available candidate
+    for(let i = 0; i < candidates.length; i++){
+      // add it to your partial solution
+      partialSolution.push(candidates[i]);
+      // and recurse further
+      backtrack(partialSolution, prod/candidates[i]);
+      // or backtrack on the current seletion and try other  valid candidates;
+      partialSolution.pop();
+    }
+  }
+
+  // helper; candidates generation is the main difficult part of this question
+  function generateCandidates (int){
+    // we first generate all the prime factors of the input number
+    let current_remainder_num = int;
+    let current = 2;
+    let prime_factors = [];
+    // loop till the input does not reduce to 1
+    while(current_remainder_num != 1){
+      // if the current value is divisible by current(default:2)
+      if(current_remainder_num % current == 0){
+        // push current to prime_factors
+        prime_factors.push(current);
+        // update the input
+        current_remainder_num = current_remainder_num / current;
+        // and reset current to default
+        current = 2;
+      }
+      else{
+        // else we increment to value of current to see if the input is divisible by other prime numbers
+        current++;
+      }
+    }
+    // next, we generate the multiples(unique ones) of prime factors found in the prev step
+    let all_factors = new Set();
+    for(let i = 0; i < prime_factors.length; i++){
+      let prod = prime_factors[i];
+      // add the prime factor itself
+      all_factors.add(prime_factors[i]);
+      // add all the multiples of the current prime factor and the other prime factors
+      for(let j = i + 1; j < prime_factors.length; j++){
+        prod = prod * prime_factors[j];
+        if(all_factors.has(prod) != true){
+          all_factors.add(prod);
+        }
+      }
+    }
+    // we have to exclude n itself if it's in the list of all factors
+    all_factors.delete(n);
+    // sorting requirement is, again, to make the solution pass lintcode's stupid test cases
+    return Array.from(all_factors).sort((a,b) => a-b);
+  }
+}
 
 function maxUniqueSplit(s){
   let max_count = 0;
@@ -303,65 +437,71 @@ function generateParenthesis (n){
 
 
 function canPartitionKSubsets(nums, k){
-  {
-    // This is a dynamic programming question and the backtracking solution will give TLE in javascript. The same solution passes in faster languages like cpp. Neetcode had it in his backtracking section. LC has added additional testcases that require memoization. I am leaving the backtracking solution because I struggled a lot with this question. But dp is the way to go. Every other list has this in dp section so im guessing Neetcode solved it when leetcode didn’t have the newer testcases. I am leaving both the solutions and will revisit this when i have learnt dp.
+  let total_sum = nums.reduce((accumulator, current) => accumulator + current, 0);
+  let subset_sum = total_sum/k;
+  // if the subset sum is a floating point number, partition would be impossible
+  if(Number.isInteger(subset_sum) == false){
+    return false
   }
-
-  let havefoundksubsets = false;
-  let subsetsum = 0;
-  let total = 0;
-  let temporary = []
-  let hashset = new Set();
-
-  for(let i = 0; i < nums.length; i++){
-    total = total + nums[i];
+  nums = nums.sort((a,b) => b-a);
+  // if even one of the number is larger than the subset sum, partition would be impossible since all numbers have to be included
+  if(nums[0] > subset_sum){
+    return false
   }
-  subsetsum = total / k;
+  let is_partition_possible = false;
+  let subsets_count = 0
+  // init the subset array that will track the kth subset's sum at any given state and the candidates array that represents the subset that an element can be added to
+  let subsets_arr = [];
+  let candidates = [];
+  for(let i = 0; i < k; i++){
+    subsets_arr[i] = 0;
+    candidates[i] = i;
+  }
+  backtrack(0, 0);
+  console.log(is_partition_possible);
+  return is_partition_possible
 
-  function backtrack(temp, alreadyincluded, sumsofar, totalsubsets, currentindex){
-   
-    if(havefoundksubsets == true || totalsubsets == k){
-      havefoundksubsets = true;
+  // helper; backtracking function
+  function backtrack(index, complete_subsets){
+    // base case 1: if k complete subsets have been found, exit
+    if(complete_subsets == k){
+      is_partition_possible = true;
       return
     }
-    if(sumsofar == subsetsum){
-      for(let i =0; i < temp.length; i++){
-        alreadyincluded.add(temp[i])
-      }
-      let nextindex = 0
-      for(let i = 0; i < nums.length; i++){
-        if(!alreadyincluded.has(i)){
-          break
-        }
-        else nextindex++
-      }
-      backtrack([], alreadyincluded, 0, totalsubsets+1, nextindex)
-      for(let i =0; i < temp.length; i++){
-        alreadyincluded.delete(temp[i])
-      }
-      return
-    }
-    if(currentindex >= nums.length ||sumsofar > subsetsum){
+    // base case 2: if at the last element, can't recurse further, so exit
+    if(index == nums.length){
       return
     }
 
-    let nextindex = currentindex+1;
-    for(let i = currentindex + 1; i < nums.length; i++){
-      if(!alreadyincluded.has(i)){
-        break
+    // for each element, we have k different choices corresponding to the kth bucket that each element can be added to
+    for(let i = 0; i < candidates.length; i++){
+      // exit early if patitioning is found to be possible already
+      if(is_partition_possible){
+        break;
       }
-      else nextindex++
+      // optimization 1: if adding the current element to the ith subset makes its sum larger than the permissible subset_sum, we move to the i+th subset
+      // this could have been in the base case to check if the partial solution can be extended further or not
+      if(subsets_arr[i] + nums[index] > subset_sum){
+        continue;
+      }
+      // add current element to i'th subset
+      subsets_arr[i] = subsets_arr[i] + nums[index];
+      // complete subset's count needs to be incremented if adding the current element to a subset makes its sum equal to subset_sum
+      if(subsets_arr[i] == subset_sum){
+        complete_subsets++;
+      }
+
+      // recurse on the next element
+      backtrack(index+1, complete_subsets);
+
+      // backtrack on the subset choice for the current element
+      // complete subsets count needs to be decremented if it were incremented as a result of adding the current element to the i'th subset, and you gotta do it before decrementing the i'th subset's sum
+      if(subsets_arr[i] == subset_sum){
+        complete_subsets--
+      }
+      subsets_arr[i] = subsets_arr[i] - nums[index];
     }
-
-    temp.push(currentindex)
-    backtrack(temp, alreadyincluded, sumsofar + nums[currentindex], totalsubsets, nextindex)
-
-    temp.pop()
-    backtrack(temp, alreadyincluded, sumsofar, totalsubsets, nextindex)
   }
-  backtrack(temporary, hashset, 0,0,0)
-  console.log(havefoundksubsets);
-  return havefoundksubsets
 }
 
 
@@ -650,7 +790,7 @@ function combinationSum(candidates, target){
       if(sumSoFar > target || index == candidates.length){
           return
       }
-      // generate possible candidates; [either you include the current element or you dont]
+      // generate possible candidates; [either you include the current element or you dont in the final solution]
       let potentialCandidates = [true, false]
       // for each possible candidate
       for(let i = 0; i < potentialCandidates.length; i++){
@@ -686,7 +826,7 @@ function combinationsum2(candidates, target) {
     return;
   }
   function generateCandidates() {
-    // for every index i, your available choices are true or false, true corresponds to including the element and false corresponds to excluding the element
+    // for every index i, your available choices are true or false, true corresponds to including the element in the result and false corresponds to excluding the element from the result
     return [true, false];
   }
   function backtrack(partialSolution, index, sumsofar) {
@@ -694,7 +834,7 @@ function combinationsum2(candidates, target) {
       processSolution(partialSolution);
       return;
     }
-    // exit condition; this should've been included in isASolution function tbh; 
+    // exit condition;
     if (index == candidates.length || sumsofar > target){
       return;
     }
@@ -703,7 +843,7 @@ function combinationsum2(candidates, target) {
     let potentialCandidates = generateCandidates();
 
     // here, your next index to call backtrack function on cannot be your next adjacent element if it is a duplicate; 
-    // you can use a skip counter like in the current implementation below and use (index + skipCounter + 1) as an argument; you can also initialize nextIndex to currentIndex + 1 and iterate till you find a new value and then use newIndex as argument; the latter is cleaner and that is what i've done in other questions.
+    // you can use a skip counter like in the current implementation below and use (index + skipCounter + 1) as an argument when you recurse on the next node; or you can initialize nextIndex to currentIndex + 1 and iterate till you find a new value and then use newIndex as argument; the latter is cleaner and that is what i've done in other questions.
     let skipIndexCOunt = 0;
     for(let i = index+1; i < candidates.length; i++){
       // if the element is a duplicate, increment the skip counter
@@ -713,13 +853,13 @@ function combinationsum2(candidates, target) {
     }
     // for each candidate
     for (let i = 0; i < potentialCandidates.length; i++) {
-      // include the element
+      // include the current element in the res
         if (potentialCandidates[i] == true) {
             partialSolution.push(candidates[index]);
             backtrack(partialSolution, index + 1, sumsofar + candidates[index]);
             partialSolution.pop();
           } 
-      // exclude the element
+      // exclude the current element
         else {
           // here you have to add the skip counter to your current index; calculating the newIndex directly would have been cleaner
             backtrack(partialSolution, index +skipIndexCOunt+1, sumsofar);
