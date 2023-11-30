@@ -1,6 +1,6 @@
 import queue from "../data structures/queue.mjs"
 
-// total questions: 5
+// total questions: 8
 // lowestCommonAncestor([1,2], 1, 2)                                                                                    //lc236: medium *
 // kthSmallest([3,1,4,null,2], 1)                                                                                       //lc230: medium
 // maxDepth([3,9,20,null,null,15,7])                                                                                    //lc104: easy

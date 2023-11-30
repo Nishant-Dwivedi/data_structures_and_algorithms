@@ -72,10 +72,42 @@
 // characterReplacement("JSDSSMESSTR", 2)            // LC:424;   medium   #good question
 // numSubarrayProductLessThanK([1,2,3], 0)           // LC:713;   medium   #faster solution when solved sliding window when compared with two pointers
 // findAnagrams("cbaebabacd", "abc")                 // lc:438;   medium   #good question; collapsing sw
-
+maxFrequency([9930,9923,9983,9997,9934,9952,9945,9914,9985,9982,9970,9932,9985,9902,9975,9990,9922,9990,9994,9937,9996,9964,9943,9963,9911,9925,9935,9945,9933,9916,9930,9938,10000,9916,9911,9959,9957,9907,9913,9916,9993,9930,9975,9924,9988,9923,9910,9925,9977,9981,9927,9930,9927,9925,9923,9904,9928,9928,9986,9903,9985,9954,9938,9911,9952,9974,9926,9920,9972,9983,9973,9917,9995,9973,9977,9947,9936,9975,9954,9932,9964,9972,9935,9946,9966]
+    , 3056)
 // ................................................................................................................................................................................................................
 import queue from "../data structures/queue.mjs"
 //.................................................................................................................................................................................................................
+
+function maxFrequency(nums, k){
+    let frq_map = new Map();
+    for(let i = 0; i < nums.length; i++){
+        // if(frq_map.has(nums[i])){
+        //     frq_map.set(nums[i], frq_map.get(nums[i]) + 1);
+        // }
+        // else{
+            frq_map.set(nums[i], 1);
+        // }
+    }
+    nums = nums.sort((a, b) => a-b);
+    let max_frq = 1;
+    for(let i = nums.length-1; i >= 0; i--){
+        if(i != nums.length && nums[i] == nums[i+1]){
+            continue
+        }
+        let additions_left = k;
+        for(let j = i - 1; j >= 0; j--){
+            let diff = nums[i] - nums[j];
+            if(additions_left >= diff){
+                additions_left -= diff;
+                frq_map.set(nums[i], frq_map.get(nums[i])+1);
+                max_frq = Math.max(max_frq, frq_map.get(nums[i]));
+            }
+            else break;
+        }
+    }
+    console.log(max_frq);
+    return max_frq;
+}
 
 function findAnagrams(s, p){
     // generate a frequency map
