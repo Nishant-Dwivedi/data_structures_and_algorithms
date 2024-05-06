@@ -1,3 +1,5 @@
+// *There's a line sweep alogirthm that uses prefix sum. Be sure to learn it.
+
 // QUESTIONS SOLVED 3
 // findMaxLength([0,1])
 // subarraySum([1,2,1,2,1], 3) 
@@ -6,7 +8,7 @@
 
 function subarraySum(nums, k){
     {
-     // sliding window does not work here because there are negative numbers present. if there were just positive elements, it would have worked. expanding the window on the right hand side no longer means strictly increasing subarray sum.similarly shrinking the window from the left hand side no longer means strictly decreasing subarray sum.
+     // sliding window does not work here because there are negative numbers present. if there were just positive elements, it would have worked. expanding the window on the right hand side no longer means strictly increasing subarray sum (breaks the invariant). similarly shrinking the window from the left hand side no longer means strictly decreasing subarray sum.
     }
     let prefix_sum = 0;
     let hashmap = new Map();

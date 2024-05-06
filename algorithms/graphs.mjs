@@ -27,6 +27,8 @@ import queue from "../data structures/queue.mjs"
 // calcEquation([["a","b"],["b","c"]], [2.0,3.0], [["a","c"],["b","a"],["a","e"],["a","a"],["x","x"]])                                  //lc:399  medium
 // .....................................................................................................................................................................
 
+
+
 function calcEquation (equations, values, queries){
     // build an adj list(undirected) and the weight map
     let adj_list = new Map();

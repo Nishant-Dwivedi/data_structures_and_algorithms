@@ -12,7 +12,102 @@
 // findDuplicates([4,3,2,7,8,2,3,1])                          //LC 442 medium
 // missingNumber([9,6,7,2,3,5,8,0,4])                         //LC 268 easy
 // majorityElement([2,2,1,1,1,2,2])                           //lc 169 easy
+// insert([[1,5]], [6,8])
+// merge([[1,4],[0,0]])
+// employeeFreeTime([[1,2,5,6],[1,3],[4,10]])
 // ..................................................................................................................................................................................
+
+function employeeFreeTime(schedule){
+    // get all the intervals in a single array
+    let cumulative_schedule = [];
+    for(let i = 0; i < schedule.length; i++){
+        for(let j = 0; j < schedule[i].length; j += 2){
+            cumulative_schedule.push([schedule[i][j], schedule[i][j+1]]);
+        }
+    }
+    // sort that single array based on each interval's start time
+    cumulative_schedule = cumulative_schedule.sort((a, b) => a[0] - b[0]);
+    // merge overlapping intervals
+    cumulative_schedule = merge(cumulative_schedule);
+    // find the non-overlapping intervals
+    let res = [];
+    for(let i = 0; i < cumulative_schedule.length - 1; i++){
+        res.push([cumulative_schedule[i][1], cumulative_schedule[i+1][0]])
+    }
+    console.log(res);
+    return res
+}
+
+function merge (intervals){
+    // sort based on interval's start time 
+    intervals = intervals.sort((a, b) => {
+        return a[0] - b[0];
+    })
+    let res = [];
+    for(let i = 0; i < intervals.length; i++){
+        let curr_int_start = intervals[i][0];
+        let curr_int_end = intervals[i][1];
+        for(let j = i+1; j <= intervals.length; j++){
+        // if there's an overlap, expand the ith interval
+            if(intervals[j] && intervals[j][0] <=  curr_int_end){
+                curr_int_start = Math.min(curr_int_start, intervals[j][0]);
+                curr_int_end = Math.max(curr_int_end, intervals[j][1]);
+                // since there was a merger of intervals, we want i to start from j+1 in the next iteration if there are no further mergers; since a for loop will increment it by 1 before the next iteration starts, we set it to j to compensate
+                i = j;
+                continue;
+            }
+            // if there was no overlap, push the ith interval since it can no longer be expanded
+            else{
+                res.push([curr_int_start, curr_int_end]);
+                // we want i to start from j in the next iteration; since a for loop will increment it by 1 before the next iteration starts, we set it to j-1 to compensate
+                i = j-1;
+                break;
+            }
+        }
+    }
+    // console.log(res);
+    return res
+}
+
+function insert(intervals, newInterval){
+    let res = [];
+    let a = newInterval[0];
+    let b = newInterval[1];
+    let merged = false;
+    let a1 = newInterval[0];
+    let b1 = newInterval[1];
+    if(intervals.length == 0){
+        res.push([...newInterval]);
+        console.log(res);
+        return res;
+    }
+    for(let i = 0; i < intervals.length; i++){
+        // if i'th interval ends before new interval starts
+        if(intervals[i][1] < a){
+            // push i'th interval
+            res.push(intervals[i]);
+        }
+        // if i'th interval starts after new interval ends
+        else if(intervals[i][0] > b){
+            // push new interval and mark merged as true if the new interval hasn't been inserted already
+            !merged ? res.push([a1, b1]) : null;
+            merged = true;
+            // push the i'th interval
+            res.push(intervals[i]);
+        }
+        // else expand new interval and merge i'th interval
+        else{
+            a1 = Math.min(intervals[i][0], a1);
+            b1 = Math.max(intervals[i][1], b1);
+        }
+        // if i points to the last interval and merger still isn't complete, push the new interval
+        if(merged == false && i == intervals.length-1){
+                res.push([a1, b1]);
+            }
+    }
+    console.log(res);
+    return res;
+}
 
 function majorityElement(nums){
     nums.sort((a,b) => a - b);

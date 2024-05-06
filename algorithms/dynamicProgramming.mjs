@@ -1,28 +1,366 @@
-// questions solved: 20
+// questions solved: 24
 
-// coinChange([1,2,5], 11)                                       //lc:322 medium
-// canPartition([14,9,8,4,3,2])                                  //lc:416 medium
-// rob([1,2])                                                    //lc:198 medium
-// numDecodings("111111111111111111111111111111111111111111111") //lc:91  medium *
-// canJump([3,2,1,0,4])                                          //lc:55  medium
-// combinationSum4([1,2,3], 4)                                   //lc:377 medium *
-// wordBreak("applepenapple", ["apple","pen"])                   //lc:139 medium
-// longestPalindrome("babaddtattarrattatddetartrateedredividerb")//lc:5   medium two pointers solution is way faster
-// uniquePaths(3, 7)                                             //lc:62  medium
-// rob2([114,117,207,117,235,82,90,67,143,146,53,108,200,91,80,223,58,170,110,236,81,90,222,160,165,195,187,199,114,235,197,187,69,129,64,214,228,78,188,67,205,94,205,169,241,202,144,240])                              //lc:213 medium *
-// findTargetSumWays([1,1,1,1,1], 3)                             //lc:494 medium
-// maxProfit([7,1,5,3,6,4])                                      //lc:
-// maxProfit2([1,2,3,0,2])                                       //lc:309 medium
-// isInterleave("aabcc", "dbbca", "aadbbcbcac")                  //lc:97  medium
-// coinChange2(5, [1,2,5])                                       //lc:518 medium
-// numSquares(7929)                                              //lc:279 medium *
-// countGoodStrings(10000, 10000, 2, 8)                          //lc:
-// mostPoints([[1,1],[2,2],[3,3],[4,4],[5,5]]);                  //lc:
-// lengthOfLIS([18,55,66,2,3,54]);                               //lc:           *
-// longestArithSeqLength([3,6,9,12])                             //lc:
+// coinChange([1,2,5], 11)                                       //lc:322  medium
+// canPartition([14,9,8,4,3,2])                                  //lc:416  medium
+// rob([1,2])                                                    //lc:198  medium
+// numDecodings("111111111111111111111111111111111111111111111") //lc:91   medium *
+// canJump([3,2,1,0,4])                                          //lc:55   medium
+// combinationSum4([1,2,3], 4)                                   //lc:377  medium *
+// wordBreak("applepenapple", ["apple","pen"])                   //lc:139  medium
+// longestPalindrome("babaddtattarrattatddetartrateedredividerb")//lc:5    medium two pointers solution is way faster
+// uniquePaths(3, 7)                                             //lc:62   medium
+// rob2([114,117,207,117,235,82,90,67,143,146,53,108,200,91,80,223,58,170,110,236,81,90,222,160,165,195,187,199,114,235,197,187,69,129,64,214,228,78,188,67,205,94,205,169,241,202,144,240])                                                //lc:213  medium *
+// findTargetSumWays([1,1,1,1,1], 3)                             //lc:494  medium
+// maxProfit([7,1,5,3,6,4])                                      //lc:121  easy
+// maxProfit2([1,2,3,0,2])                                       //lc:309  medium
+// isInterleave("aabcc", "dbbca", "aadbbcbcac")                  //lc:97   medium
+// coinChange2(5, [1,2,5])                                       //lc:518  medium
+// numSquares(7929)                                              //lc:279  medium *
+// countGoodStrings(10000, 10000, 2, 8)                          //lc:2466 medium
+// mostPoints([[1,1],[2,2],[3,3],[4,4],[5,5]]);                  //lc:2140 medium
+// lengthOfLIS([18,55,66,2,3,54]);                               //lc:300  medium *
+// longestArithSeqLength([3,6,9,12])                             //lc:1027 medium *
+// minDistance("horse", "ros")                                   //lc:72   medium
+// mincostTickets([1,2,3,4,6,8,9,10,13,14,16,17,19,21,24,
+// 26,27,28,29], [3,14,50])                                      //lc:983  medium
+// minCost(7, [1,3,4,5])                                         //lc:1547 hard   *
+// numDistinct("rabbbit", "rabbit")                              //lc:115  hard
+// uniquePathsWithObstacles([[0,0],[0,1]])                       //lc:63   medium
+// minInsertions("mbadm")                                        //lc:1312 hard
+// minimumTotal([[2],[3,4],[6,5,7],[4,1,8,3]])                   //lc:
+// maxSumAfterPartitioning([1,15,7,9,2,5,10], 3)                 //lc:
+// maxProfit4(2, [3,2,6,5,0,3]) tle                              //lc:     hard
+// findLength( [0,1,1,1,1], [1,0,1,0,1])
+// max_p_amzn([3,2,5,6,1])
 // ..........................................................................................................................................................................
 
-// tle's when hashmap is used as a cache. No static array in js, so the only other way left is bottom up tabulation
+
+
+function max_p_amzn(pl){
+    let max = dp(0, 0)
+    console.log(max);
+    return max;
+
+    function dp(index, pref_sum){
+        if(index == pl.length){
+           if(pref_sum > 0){
+            return 0
+           }
+           else return Number.MIN_SAFE_INTEGER;
+        }
+        let highest_p;
+        if(pref_sum > pl[index]){
+            highest_p = Math.max(1 + dp(index+1, pref_sum - pl[index]), dp(index + 1, pref_sum + pl[index]));
+        }
+        else{
+            highest_p = dp(index + 1, pref_sum + pl[index]);
+        }
+        return highest_p;
+    }
+}
+
+// tle from m*n memoization
+function findLength(nums1, nums2){
+    let memo = new Map();
+    let max_len = dp(0, 0, 0);
+    console.log(max_len);
+    return max_len;
+
+    function dp(s1_ind, s2_ind, prefix_matched){
+        if(memo.has(`${s1_ind},${s2_ind},${prefix_matched}`)){
+            return memo.get(`${s1_ind},${s2_ind},${prefix_matched}`);
+        }
+        // base case
+        if(s1_ind == nums1.length || s2_ind == nums2.length){
+            return 0
+        }
+        let max_substring = 0;
+        // if the s1 char matches the s2 char
+        if(nums1[s1_ind] == nums2[s2_ind]){
+            // if the prefix of nums1 ending at s1_ind - 1 exactly matches the prefix of nums2 ending at index s2_ind-1, the current and the subsequent chars also need to be exact matches
+            if(prefix_matched == 1){
+                max_substring = 1 + dp(s1_ind+1, s2_ind+1, 1);
+            }   
+            // if there isn't a prefix that's been matched
+            else{
+                max_substring = Math.max(1 + dp(s1_ind+1, s2_ind+1, 1), dp(s1_ind+1, s2_ind, 0), dp(s1_ind, s2_ind+1, 0));
+            }
+        }
+        // else if the s1 char does not match the s2 char
+        else{
+            if(prefix_matched == 0){
+                max_substring = Math.max(dp(s1_ind+1, s2_ind, 0), dp(s1_ind, s2_ind+1, 0));
+            }
+            else{
+                return 0;
+            }
+        }
+        memo.set(`${s1_ind},${s2_ind},${prefix_matched}`, max_substring)
+        return max_substring;
+    }
+}
+
+// tle O(n^2*k)
+function maxProfit4(k, prices){
+    let memo = new Map();
+    let max = dp(0, k);
+    console.log(max, count);
+    return max;
+
+    function dp(index, rem_sale){
+        if(memo.has(`${index},${rem_sale}`)){
+            return memo.get(`${index},${rem_sale}`);
+        }
+        if(rem_sale == 0 || index >= prices.length-1){
+            return 0;
+        }
+        let max_amount = Number.MIN_SAFE_INTEGER;
+        // either purchase the stock at curr index 
+        for(let i = index+1; i < prices.length; i++){
+            // and sell it later at a higher price
+            if(prices[i] > prices[index]){
+                max_amount = Math.max(max_amount, prices[i] - prices[index] + dp(i+1, rem_sale-1));
+            }
+        }
+        // or skip the stock at the current index and purchase some other stock in the range index+1 -> n.
+        max_amount = Math.max(max_amount, dp(index+1, rem_sale));
+        memo.set(`${index},${rem_sale}`, max_amount)
+        return max_amount;
+    }
+}
+
+function maxSumAfterPartitioning(arr, k){
+    let max_sum = dp(0);
+    console.log(max_sum);
+    return max_sum;
+
+    function dp (ind){
+        if(ind == arr.length-1){
+            return arr[ind];
+        }
+        if(ind >= arr.length){
+            return 0
+        }
+
+        let max = arr[ind];
+        let max_element = arr[ind];
+        let max_subarr_sum = Number.MIN_SAFE_INTEGER;
+        for(let i = ind; i < ind + k && i < arr.length; i++){
+            max_element = Math.max(max_element, arr[i]);
+            max_subarr_sum = (i - ind + 1) * max_element;
+            max = Math.max(max, max_subarr_sum + dp(i+1));
+        }
+        return max;
+    }
+}
+
+function minimumTotal (triangle){
+    let min = dp(0,0);
+    console.log(min);
+    return min;
+
+    function dp(row_ind, col_ind){
+        if(row_ind == triangle.length){
+            return 0
+        }
+
+        let min_from_next_row = Math.min(triangle[row_ind][col_ind] + dp(row_ind+1, col_ind), triangle[row_ind][col_ind] + dp(row_ind+1, col_ind+1));
+        return min_from_next_row;
+    }
+}
+
+function minInsertions(s){
+    let memo = new Map()
+    let min_insertions = dp(0, s.length-1);
+    console.log(min_insertions);
+    return min_insertions;
+
+    function dp(start_ind,end_ind){
+        if(memo.has(`${start_ind},${end_ind}`)){
+            return memo.get(`${start_ind},${end_ind}`);
+        }
+        if(start_ind >= end_ind){
+            return 0
+        }
+        let min_inserts;
+        if(s.charAt(start_ind) == s.charAt(end_ind)){
+            min_inserts = dp(start_ind+1, end_ind-1);
+        }
+        else{
+            min_inserts = Math.min(1 + dp(start_ind+1, end_ind), 1 + dp(start_ind, end_ind-1))
+        }
+        memo.set(`${start_ind},${end_ind}`, min_inserts);
+        return min_inserts;
+    }
+}
+
+function uniquePathsWithObstacles(obstacleGrid){
+    if(obstacleGrid[obstacleGrid.length-1][obstacleGrid[0].length-1] == 1){
+        return 0
+    }
+    let ways = dp(obstacleGrid.length-1, obstacleGrid[0].length-1)
+    console.log(ways);
+    return ways;
+
+    function dp (row, col){
+        // base cases
+        if(row == 0 && col == 1){
+            if (obstacleGrid[row][col] == 0){
+                return 1
+            }
+            else return 0
+        }
+        if(row == 1 && col == 0){
+            if (obstacleGrid[row][col] == 0){
+                return 1
+            }
+            else return 0
+        }
+        let num_of_ways_to_reach_curr = 0
+        if(row - 1 >= 0 && obstacleGrid[row-1][col] == 0){
+            num_of_ways_to_reach_curr += dp(row-1, col);
+        }
+        if(col - 1 >= 0 && obstacleGrid[row][col-1] == 0){
+            num_of_ways_to_reach_curr += dp(row,col-1);
+        }
+        return num_of_ways_to_reach_curr;
+    }
+}
+
+function numDistinct(s, t){
+    let num = dp(0, 0);
+    console.log(num);
+    return num;
+
+    function dp (s_ind, t_ind){
+        if(t_ind == t.length){
+            return 1;
+        }
+        if(s_ind == s.length){
+            return 0;
+        }
+
+        let num_of_ways_to_build_t = 0;
+        if(s.charAt(s_ind) == t.charAt(t_ind)){
+            num_of_ways_to_build_t += dp(s_ind+1,t_ind+1) + dp(s_ind+1, t_ind);
+        }
+        else{
+            num_of_ways_to_build_t += dp(s_ind+1, t_ind);
+        }
+        return num_of_ways_to_build_t;
+    }
+}
+
+function minCost(n, cuts){
+    let memo = new Map()
+    let min_c = dp(0, n)
+    console.log(min_c);
+    return min_c
+
+    function dp(start_ind, end_ind){
+        if(memo.has(`${start_ind},${end_ind}`)){
+            return memo.get(`${start_ind},${end_ind}`);
+        }
+        let min_cost_to_cut_curr_fragment = Number.MAX_SAFE_INTEGER;
+        for(let i = start_ind + 1; i <= end_ind - 1; i++){
+            if(cuts.includes(i)){
+                let left_segment_price = dp(start_ind, i);
+                let right_segment_price = dp(i, end_ind)
+                min_cost_to_cut_curr_fragment = Math.min(min_cost_to_cut_curr_fragment, end_ind - start_ind + left_segment_price + right_segment_price);
+            }
+        }
+        memo.set(`${start_ind},${end_ind}`,min_cost_to_cut_curr_fragment == Number.MAX_SAFE_INTEGER ? 0 : min_cost_to_cut_curr_fragment)
+        return min_cost_to_cut_curr_fragment == Number.MAX_SAFE_INTEGER ? 0 : min_cost_to_cut_curr_fragment
+    }
+}
+
+function mincostTickets(days, costs){
+    let first_ticket = costs[0] + dp(0, 0);
+    let second_ticket = costs[1] + dp(0, 1);
+    let third_ticket = costs[2] + dp(0,2);
+    let min_cost = Math.min(first_ticket, second_ticket,third_ticket);
+    console.log((min_cost));
+    return min_cost;
+
+    function dp(index, cost_ind){
+        if(index == days.length-1){
+            return 0;
+        }
+
+        let pass_valid_till = days[index];
+        if(cost_ind == 0){
+            pass_valid_till += 1;
+        }
+        else if(cost_ind == 1){
+            pass_valid_till += 7;
+        }
+        else{
+            pass_valid_till += 30;
+        }
+
+        let min_price_to_cover_journey = Number.MAX_SAFE_INTEGER;
+
+        for(let i = index+1; i < days.length; i++){
+            if(days[i] <= pass_valid_till-1){
+                // change the min cost to zero at the last index otherwise the outer min won't function
+                if(i == days.length-1){
+                    min_price_to_cover_journey = 0;
+                }
+                continue;
+            }
+            else{
+                for(let j = 0; j <= 2; j++){
+                    min_price_to_cover_journey = Math.min(min_price_to_cover_journey, costs[j] + dp(i, j))
+                }
+                break;
+            }
+        }
+        return min_price_to_cover_journey;
+    }
+}
+
+function minDistance(word1, word2){
+    let min = dp(0, 0);
+    console.log(min);
+    return min;
+
+    function dp (s1_ind, s2_ind){
+        if(s1_ind == word1.length){
+            if(s2_ind == word2.length){
+                return 0
+            }
+            else{
+                return word2.length - s2_ind;
+            }
+        }
+        if(s2_ind == word2.length){
+            if(s1_ind == word1.length){
+                return 0
+            }
+            else{
+                return word1.length - s1_ind;
+            }
+        }
+
+        let min_steps;
+        if(word1.charAt(s1_ind) == word2.charAt(s2_ind)){
+            min_steps = dp(s1_ind+1, s2_ind+1);
+        }
+        else{
+            min_steps = Math.min(
+                // delete s1_ind char from word1
+                1 + dp(s1_ind+1, s2_ind),
+                // replace s1_ind char in word1 to s2_ind char in word2
+                1 + dp(s1_ind+1, s2_ind+1),
+                // insert
+                1 + dp(s1_ind, s2_ind + 1)
+            )
+        }
+        return min_steps;
+    }
+}
+
+// tle's when hashmap is used as a cache. No static array in js, so the only other way to get it to pass is bottom up tabulation
 function longestArithSeqLength(nums){
     let len = 0;
     let memo = new Map()
@@ -32,7 +370,9 @@ function longestArithSeqLength(nums){
             if(memo.has(`${i},${nums[j]-nums[i]}`)){
                 curr = memo.get(`${i},${nums[j]-nums[i]}`)
             }
-            curr = 1 + dp(j, nums[j] - nums[i])
+            else{
+                curr = 1 + dp(j, nums[j] - nums[i])
+            }
             len = Math.max(len, curr);
             memo.set(`${i},${nums[j]-nums[i]}`, curr);
         }
@@ -79,6 +419,7 @@ function lengthOfLIS(nums){
             largest_lis_starting_with_curr = Math.max(largest_lis_starting_with_curr,  1+dp(i))
            }
         }
+        // this branch of recursion does not return the lis starting with index; 
         let largest_lis_not_starting_with_curr = dp(index+1);
         len = Math.max(largest_lis_not_starting_with_curr, largest_lis_starting_with_curr);
         // we memoize and return the largest lis starting with the current char, instead of the absolute largest lis in the range: index...n;

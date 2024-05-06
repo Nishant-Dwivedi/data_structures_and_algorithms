@@ -8,25 +8,152 @@ import queue from "../data structures/queue.mjs"
 // pathSum3([1,0,1,1,2,0,-1,0,1,-1,0,-1,0,1,0], 2)                                                                      //lc437: medium
 // maxPathSum([9,6,3,null,null,-6,2,null,null,null,null,null,null,2,])                                                  //lc124: hard
 // rightSideView([1,null,3])                                                                                            //lc99:  medium
-// diameterOfBinaryTree([1,2,3,4,5])                                                                                    //lc543: easy
+// diameterOfBinaryTree([1,3,2,5,null,null,9,6,null,7])                                                                 //lc662: medium
+// distanceK([3,5,1,6,2,0,8,null,null,7,4], 5, 2)                                                                       //lc863: medium
+// verticalTraversal([1,2,3,4,5,6,7])
 // ..........................................................................................................................................................................
 
-function diameterOfBinaryTree(root){
-    let max_dia = 0;
-    dfs(0);
-    console.log(max_dia);
-    return max_dia
-
-    function dfs(curr_index){
-        if(curr_index >= root.length || root[curr_index] == null){
-            return -1;
+function verticalTraversal (root){
+    let col_map = new Map();
+    let smallest_col = Number.MAX_SAFE_INTEGER;
+    let largest_col = Number.MIN_SAFE_INTEGER;
+    dfs(0, 0, 0);
+    let res = new Array();
+    for(let i = smallest_col; i <= largest_col; i++){
+        if(col_map.has(i)){
+            let arr = col_map.get(i);
+            let result = []
+            arr.forEach(element => {
+                if(element != undefined){
+                    result = result.concat(element);
+                }
+            });
+            res.push(result);
         }
-        let left_min = dfs(2*curr_index+1);
-        let right_min = dfs(2*curr_index+2);
-        max_dia = Math.max(max_dia, left_min + 2 + right_min);
-        return left_min > right_min ? left_min + 1 : right_min + 1;
+    }
+    console.log(res);
+    return res;
+
+    function dfs(ind, col, lvl){
+        // base case
+        if(root[ind] == null || ind >= root.length){
+            return;
+        }
+        // visit
+        if (col_map.has(col)) {
+            let lvl_arr = col_map.get(col);
+            if(lvl_arr[lvl] != undefined){
+                lvl_arr[lvl].push(root[ind]);
+                lvl_arr[lvl].sort((a,b) => a - b);
+            }
+            else{
+                lvl_arr[lvl] = [root[ind]];
+            }
+        }
+        else{
+            let new_lvl_arr = new Array();
+            new_lvl_arr[lvl] = [root[ind]];
+            col_map.set(col, new_lvl_arr);
+        }
+        // update the smallest/largest col
+        smallest_col = Math.min(smallest_col, col);
+        largest_col = Math.max(largest_col, col);
+        // recurse
+        dfs(ind*2 + 1, col - 1, lvl + 1);
+        dfs(ind*2 + 2, col + 1, lvl + 1);
+    }
+
+}
+
+
+function distanceK(root, target, k){
+    let res = [];
+    let visit = new Set();
+    let adj_list = new Map();
+    let target_ind = -1
+    dfs(0);
+    visit.add(target_ind);
+    dfs_height(target_ind, 0);
+    console.log(res);
+
+    // build a graph using dfs
+    function dfs(ind){
+        if(ind >= root.length || root[ind] == null){
+            return
+        }
+        if(root[ind] == target){
+            target_ind = ind;
+        }
+        root[ind*2+1] != null && ind*2+1 < root.length ? (adj_list.has(ind) ? adj_list.get(ind).push(ind*2+1) : adj_list.set(ind, [ind*2+1])) : null;
+        root[ind*2+2] != null && ind*2+2 < root.length ? (adj_list.has(ind) ? adj_list.get(ind).push(ind*2+2) : adj_list.set(ind, [ind*2+2])) : null;
+        Math.floor((ind - 1)/2) >= 0 ?(adj_list.has(ind) ? adj_list.get(ind).push(Math.floor((ind - 1)/2)):adj_list.set(ind, [Math.floor((ind - 1)/2)]) ) : null;
+        dfs(ind*2+1)
+        dfs(ind*2+2)
+        return
+    }
+    // find all nodes at dist k from target using target as root
+    function dfs_height(ind, height){
+        if(height == k){
+            res.push(root[ind]);
+            return
+        }
+        let adj = adj_list.get(ind);
+        for(let i = 0; i < adj.length; i++){
+            if(visit.has(adj[i]) != true){
+                visit.add(adj[i]);
+                dfs_height(adj[i], height+1);
+            }
+        }
+    }
+}    
+
+
+function diameterOfBinaryTree(root){
+    let lvl_nodes_map = new Map();
+    let lvl_available = new Set();
+    let max_width = 0;
+    let curr_max_lvl = 0;
+    dfs(0, 0);
+    console.log(max_width);
+    return max_width;
+
+    function dfs(curr_index, curr_lvl){
+        // when on a null node, "hydrate" all the levels below the current level so that each lvl each nodes count equivalent to the count they'd have had if it were a perfect binary tree.
+        if(curr_index >= root.length || root[curr_index] == null){
+            let power_of_2 = 0;
+            // we loop upto the max lvl encountered in our dfs thus far.
+            for(let i = curr_lvl; i <= curr_max_lvl; i++){
+                if(lvl_available.has(i)){
+                    lvl_nodes_map.set(i, lvl_nodes_map.get(i) + Math.pow(2, power_of_2));
+                }
+                power_of_2++;
+            }
+            return;
+        }
+        // recurse
+        dfs(curr_index*2 + 1, curr_lvl+1);
+        dfs(curr_index*2 + 2, curr_lvl+1);
+
+        // keep track of the deepest lvl encountered in our dfs; it's used when encountering a null leaf node.
+        curr_max_lvl = Math.max(curr_max_lvl, curr_lvl);
+
+        // if the current lvl is already marked available, just increment the node count of this lvl in the hash map
+        if(lvl_available.has(curr_lvl)){
+            lvl_nodes_map.set(curr_lvl, lvl_nodes_map.get(curr_lvl) + 1);
+        }
+        // otherwise mark this new lvl as available and set the nodes count to 1
+        else{
+            lvl_available.add(curr_lvl);
+            lvl_nodes_map.set(curr_lvl, 1);
+        }
+        // the presence of even a single node on any lvl makes a lvl eligible for max width calculation(a lvl being bounded by a left node and a right node is not a requirement for the lvl to be considered valid for max width calculation)
+        if(lvl_available.has(curr_lvl)){
+            max_width = Math.max(max_width, lvl_nodes_map.get(curr_lvl));
+        }
+        return;
     }
 }
+
 
 function rightSideView(root){
     let levels_in_tree = -1;

@@ -1,16 +1,69 @@
 // ..................................................................................................................................................................................
 // QUESTIONS SOLVED 9
-// threeSum([-1,0,1,2,-1,-4,-2,-3,3,0,4])                                 LC:15;  medium
-// threeSumClosest([-1,2,1,-4], 1)                                        LC:16;  medium *
-// maxArea([2,3,4,5,18,17,6])                                             LC:11;  medium *
-// sortColors([2,0,2,1,1,0])                                              LC:75;  medium
-// isSubsequence("axc", "ahbgdc")                                         LC:392; easy
-// sortedSquares([-5,-3,-2,-1])                                           LC:977; easy
-// rotate([1,2,3,4,5,6,7], 3)                                             LC:189; medium *
-// numRescueBoats([44,10,29,12,49,41,23,5,17,26], 50)                     LC:881; medium
-// moveZeroes([0,1,0,3,12])                                               LC:283; easy
+// threeSum([-2,0,1,1,2])                                                //LC:15;  medium
+// threeSumClosest([-1,2,1,-4], 1)                                       //LC:16;  medium *
+// maxArea([1,1])                                                        //LC:11;  medium *
+// sortColors([2,0,2,1,1,0])                                             //LC:75;  medium
+// isSubsequence("axc", "ahbgdc")                                        //LC:392; easy
+// sortedSquares([-5,-3,-2,-1])                                          //LC:977; easy
+// rotate([1,2,3,4,5,6,7], 3)                                            //LC:189; medium *
+// numRescueBoats([44,10,29,12,49,41,23,5,17,26], 50)                    //LC:881; medium
+// moveZeroes([0,1,0,3,12])                                              //LC:283; easy
+// canCompleteCircuit([1,2,3,4,5],[3,4,5,1,2])
 // ..................................................................................................................................................................................
 
+function canCompleteCircuit(gas, cost){
+    gas = gas.concat(gas);
+    cost = cost.concat(cost);
+    let start = 0;
+    let end = 0;
+    let start_ind_found = false;
+    let curr_net_gas = 0;
+    let exhausted_all_indices = false;
+    while((start_ind_found != true || exhausted_all_indices != true) && end < gas.length){
+        // if end points at start, round trip is possible
+        if(end == start + gas.length / 2){
+            start_ind_found = true;
+            break;
+        }
+        if(start >= gas.length/2){
+            exhausted_all_indices = true;
+            break;
+        }
+        // if it's possible to go to the next stop, go to the next stop and update net gas as necessary
+        if(curr_net_gas + gas[end] - cost[end] >= 0){
+            curr_net_gas += gas[end] - cost[end];
+            end++;
+            continue;
+        }
+        // else if you can't move to the next station 
+        else{e
+            // if start and end are pointing at the same index, start can't be shifted ahead
+            if(start == end){
+                start++;
+                end++;
+                curr_net_gas = 0;
+                continue
+            }
+            // shift start 
+            else{
+                // while start is behind end and net gas is negative, shift left and update the net gasc
+                while(start < end && curr_net_gas + gas[end] - cost[end] < 0){
+                    curr_net_gas -= gas[start] - cost[start];
+                    start++;
+                }
+            }
+        }
+    }
+    if(start_ind_found){
+        console.log(start);
+        return start;
+    }
+    else{
+        console.log(-1);
+        return -1;
+    }
+}
 
 function numRescueBoats(people, limit){
     people.sort((a,b) => a-b);
@@ -174,108 +227,52 @@ function moveZeroes (nums){
 }
 
 function sortColors (nums){
-    {
-        // This is the Dutch National Flag Algorithm.
-        // left and right range here denote the left and right boundary of 1;
-        // anything that is not 1 and is 0 goes to the left hand side of the left boundary;
-        // anything that is not 1 and is 2 goes to the right hand side of the right boundar
-    }
-    // define a redrange and a bluerange initialised to 0 and num.length-1;
-    let redRange = 0;
-    let blueRange = nums.length-1;
-
-    for(let i = 0; i <= blueRange; i++){
-        // if i is in redrange, and we encounter a 0, it is already where it should be so we continue
-        if(i < redRange && nums[i] == 0){
-            continue;
-        } 
-        // similarly, if i is in blue range and we encounter a 2, we continue
-        if( i > blueRange && nums[i] == 2){
-            continue;
-        }
-        // else, we move 0 in its range
-        if(nums[i] == 0){
-            let temp = nums[redRange];
-            nums[redRange] = nums[i];
-            nums[i] = temp;
-            redRange++
-            i--
-        }
-        // and 2 in its range
-        else if(nums[i] == 2){
-            let temp = nums[blueRange];
-            nums[blueRange] = nums[i];
-            nums[i] = temp;
-            blueRange--;
-            i--
-        }
-        else{
-            continue
-        }
+    let left = 0;
+    let right = nums.length-1;
+    for(let i = 0; i <= right; i++){
+      if(nums[i] == 0){
+          let temp = nums[left];
+          nums[left] = nums[i];
+          nums[i] = temp;
+          left++;
+      }
+      else if(nums[i] == 2){
+          let temp = nums[right];
+          nums[right] = nums[i];
+          nums[i] = temp;
+          right--;
+          i--;
+      }
     }
     console.log(nums);
     return nums
 }
 
 function maxArea(height){
-    // initial max volume is distance between the end elements * smaller height
-    let maxVolume = (height.length-1) * Math.min(height[0], height[height.length-1]);
-    // left boundary
-    let leftBoundary = 0
-    // left pointer that traverses left to find a boundary larger than current left boundary
-    let leftTrav = 1;
-    // right boundary
-    let rightBoundary = height.length-1;
-    // right pointer that traverses right to find a boundary larger than current right boundary
-    let rightTrav = height.length-2;
-    // while the traversal pointers haven't crossed each other
-    while(leftTrav <= rightTrav){
-        // if the left boundary is the smaller one; it is holding the max volume back. we have to traverse right to look for a larger boundary 
-        if(height[leftBoundary] < height[rightBoundary]){
-            // if the current height is smaller than the left boundary itself, there is no way it will lead to an increase in volume when the distance between boundaries has been reduced; we continue
-            if(height[leftTrav] < height[leftBoundary]){
-                leftTrav++;
-                continue;
-            }
-            // when we find a boundary larger than our current left boundary
-            else{
-                // we check if it's larger than our right boundary as well; because if it is, our right boundary is now holding the total volume back, so we update our current left boundary to be this larger boundary so that the right boundary could start it's traversal to find a larger boundary in the next iteration
-                if(height[leftTrav] > height[rightBoundary]){
-                    leftBoundary = leftTrav;
-                }
-                // update the max volume if necessary and the traversal pointer
-                let newMaxVolume = Math.min(height[rightBoundary],height[leftTrav]) * (rightBoundary - leftTrav);
-                if(newMaxVolume > maxVolume){
-                    maxVolume = newMaxVolume;
-                }
-                leftTrav++;
-            }
+  let left = 0;
+  let right = height.length-1;
+  let max_volume = t
+  let current;
+  while (left < right){
+    if(height[left] < height[right]){
+        current = left + 1;
+        while(height[current] <= height[left] && current < right){
+            current++;
         }
-        // else, the right boundary is the one holding the total volume back; we have to traverse left to look for a larger boundary
-        else {
-            // if the current height is smaller than the right boundary itself, there is no way it will lead to an increase in volume when the distance between boundaries has been reduced; we continue
-            if(height[rightTrav] < height[rightBoundary]){
-                rightTrav--;
-                continue;
-            }
-            // when we find a boundary larger than our current left boundary
-            else{
-                // we check if it's larger than our left boundary as well; because if it is, our left boundary is now holding the total volume back, so we update our current right boundary to be this larger boundary so that the left boundary could start it's traversal to find a larger boundary in the next iteration
-                if(height[rightTrav] > height[leftBoundary]){
-                    rightBoundary = rightTrav
-                }
-                // update the max volume if necessary and the traversal pointer
-                let newMaxVolume = (rightTrav - leftBoundary) * (Math.min(height[rightTrav], height[leftBoundary]));
-                if(newMaxVolume > maxVolume){
-                    maxVolume = newMaxVolume;
-                }
-                rightTrav--
-            }
-        }
+        left = current;
+        max_volume = Math.max(max_volume, (right - left) * Math.min (height[left], height[right]));
     }
-    console.log(maxVolume);
-    return maxVolume;
- 
+    else{
+        current = right - 1;
+        while(height[current] <= height[right] && current > left){
+            current--;
+        }
+        right = current;
+        max_volume = Math.max(max_volume, (right - left) * Math.min (height[left], height[right]));
+    }
+  }
+  console.log(max_volume);
+  return max_volume;
 }
 
 

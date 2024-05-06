@@ -1,4 +1,4 @@
-//Questions solved 8
+//Questions solved 10
 // isValid("()[]{{]}}")                                                                                                  //lc:20;  easy
 // evalRPN(["4","-2","/","2","-3","-","-"])                                                                              //lc:150: medium 
 // asteroidCollision([-2,2,1,-2])                                                                                        //lc:735; medium  #good question
@@ -7,9 +7,101 @@
 // carFleet(10, [3], [3])                                                                                                //lc:853; medium 
 // calculate("3-2+1")                                                                                                    //lc:227; medium
 // backspaceCompare( "abcd", "bbcd")                                                                                     //lc:844; easy
+// trap( [0,1,0,2,1,0,1,3,2,1,2,1])
+// largestRectangleArea([2,4])
+
 // ...................................................................................................................................................................
 import stack from "../data structures/stack.mjs";
 // ...................................................................................................................................................................
+
+function largestRectangleArea(heights){
+    let stk = new stack();
+    let next_smaller =  new Array(heights.length);
+    let previous_smaller = new Array(heights.length);
+    for(let i = 0; i < heights.length; i++){
+        if(stk.size == 0 || heights[stk.top] <= heights[i]){
+            stk.push(i);
+        }
+        else{
+            while(stk.size != 0 && heights[stk.top] > heights[i]){
+                next_smaller[stk.top] = i;
+                stk.pop()
+            }
+            stk.push(i)
+        }
+    }
+    for(let i = heights.length-1; i >= 0; i--){
+        if(stk.size == 0 || heights[stk.top] <= heights[i]){
+            stk.push(i);
+        }
+        else{
+            while(stk.size != 0 && heights[stk.top] > heights[i]){
+                previous_smaller[stk.top] = i;
+                stk.pop()
+            }
+            stk.push(i)
+        }
+    }
+    let largest_rect = -1;
+    for(let i = 0; i < heights.length; i++){
+        let left_boundary = previous_smaller[i] ?? -1;
+        let right_boundary = next_smaller[i] ?? heights.length;
+        largest_rect = Math.max(largest_rect, heights[i] * ((right_boundary - 1) - left_boundary))
+    }
+    console.log(next_smaller, previous_smaller, largest_rect);
+    return largest_rect;
+}
+
+function trap(height){
+    let stk = new stack();
+    // an array where a[i] represents the index of the next element >= height[i] in height array
+    let next_greater = new Array(height.length);
+    // build the next greater array
+    for(let i = 0; i < height.length; i++){
+        // monotonically strictly decreasing stack
+        if(stk.size == 0 || height[i] < height[stk.top]){
+            stk.push(i);
+        }
+        else{
+            while(height[stk.top] <= height[i] && stk.size != 0){
+                next_greater[stk.top] = i;
+                stk.pop();
+            }
+            stk.push(i);
+        }
+    }
+    for(let i = 0; i < next_greater.length; i++){
+        if(!next_greater[i]){
+            next_greater[i] = -1;
+        }
+    }
+
+    let left = 0;
+    let right = 1;
+    let volume = 0;
+
+    while(left < height.length-1){
+        let delta = 0;
+        if(next_greater[left] == -1){
+            while(next_greater[right] != -1){
+                delta += height[right];
+                right++
+            }
+        }
+        else{
+            while(right != next_greater[left]){
+                delta += height[right];
+                right++;
+            }
+        }
+        volume += Math.min(height[right], height[left]) * (right - (left + 1));
+        volume -= delta;
+        left = right;
+        right++;
+    }
+    console.log(volume);
+    return volume;
+}
 
 function backspaceCompare(s, t){
 
