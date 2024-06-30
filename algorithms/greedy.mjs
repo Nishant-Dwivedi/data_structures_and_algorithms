@@ -1,5 +1,5 @@
 // Questions solved: 2
-// largestNumber([432,43243])                         //lc:179   medium  *
+// largestNumber([3,30,34,5,9])                         //lc:179   medium  *
 // reorganizeString("kkkkzrkatkwpkkkktrq")            //lc:767   medium  *
 
 //......................................................................................................................................................................
@@ -70,9 +70,9 @@ function largestNumber(nums){
          let c = a_tmp.concat(b_tmp);
          let d = b_tmp.concat(a_tmp);
          if(c > d){
-             return +1
+             return -1
          }
-         else return -1
+         else return 1
      })
      let res = "";
      for(let i = 0; i < nums.length; i++){

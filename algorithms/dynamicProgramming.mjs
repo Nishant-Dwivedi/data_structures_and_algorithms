@@ -1,4 +1,4 @@
-// questions solved: 24
+// questions solved: 36
 
 // coinChange([1,2,5], 11)                                       //lc:322  medium
 // canPartition([14,9,8,4,3,2])                                  //lc:416  medium
@@ -32,8 +32,192 @@
 // maxProfit4(2, [3,2,6,5,0,3]) tle                              //lc:     hard
 // findLength( [0,1,1,1,1], [1,0,1,0,1])
 // max_p_amzn([3,2,5,6,1])
+// longestPalindrome2("")
+// maximumLength([30,30,29], 0)
+// maxSubArray([-2,1,-3,4,-1,2,1,-5,4]);
+// maxProduct([-2,0,-1])
+// processor([4,4,6,2,5], 3, 4);                                 //reddit
+// lps("bbbab");                                                 //lc:     medium
 // ..........................................................................................................................................................................
+function lps(str){
+    let memo = new Array(str.length);
+    for(let i = 0; i < memo.length; i++){
+        memo[i] = new Array(str.length).fill(-1);
+    }
+    let max = dp(0, str.length-1);
+    console.log(max);
+    return max;
+    function dp(start, end){
+        if(memo[start][end] != -1){
+            return memo[start][end];
+        }
+        else if (start == end){
+            memo[start][end] = 1
+            return 1;
+        }
+        else if(start > end){
+            return 0
+        }
+        let max;
+        if(str.charAt(start) == str.charAt(end)){
+            max = 2 + dp(start+1, end - 1);
+        }
+        else{
+            max = Math.max(dp(start+1, end), dp(start, end-1));
+        }
+        memo[start][end] = max;
+        return max;
+    }
+}
 
+function processor(data, pA, pB){
+    let pref = new Array(data.length).fill(0);
+    let pref_sum = 0;
+    for(let i = 0; i < data.length; i++){
+        pref[i] = data[i] + pref_sum;
+        pref_sum += data[i]; 
+    }
+    let min = Math.min(dp(4, 1), dp(0, 1));
+    console.log(min);
+    return min;
+   
+    function dp(pA_total_tasks, index){
+        if(index == data.length){
+            return Math.max(pA * pA_total_tasks, pB * (pref[index-1] - pA_total_tasks));
+        }
+        let time_taken_henceforth = Math.min(dp(pA_total_tasks + data[index], index+1), dp(pA_total_tasks, index+1));
+        return time_taken_henceforth;
+    }
+}
+
+function maxProduct(nums){
+    let memo = new Array(nums.length);
+    memo.fill([null,null]);
+    let max = Number.MIN_SAFE_INTEGER;
+    for(let i = 0; i < nums.length; i++){
+        max = Math.max(max, dp(i)[0]);
+    }
+    console.log(max);
+    return max;
+
+    function dp(ind){
+        if(ind == nums.length-1){
+            // [max, min];
+            return [nums[ind], nums[ind]];
+        }
+        else if(memo[ind][0] != null && memo[ind][1] != null){
+            return memo[ind];
+        }
+        else{
+            let res;
+            if(nums[ind] > 0){
+                res =  [Math.max(nums[ind], nums[ind] * dp(ind+1)[0]), Math.min(nums[ind], nums[ind] * dp(ind+1)[1])];
+            }
+            else if(nums[ind] < 0){
+                res =  [Math.max(nums[ind], nums[ind] * dp(ind + 1)[1]), Math.min(nums[ind], nums[ind] * dp(ind+1)[0])]
+            }
+            else res = [0,0];
+            memo[ind] = res;
+            return res;
+        }
+    }
+}
+
+function maxSubArray(nums){
+    let max = Number.MIN_SAFE_INTEGER;
+    let memo = new Array(nums.length);
+    memo.fill(-1);
+    for(let i = 0; i < nums.length; i++){
+        if(memo[i] != -1){
+            max = Math.max(max, memo[i]);
+            continue;
+        }
+        max = Math.max(max, dp(i));
+    }
+    console.log(max);
+    return max;
+    function dp(i){
+        if(i == nums.length-1){
+            memo[i] = nums[i]
+            return memo[i];
+        }
+        else if(memo[i] != -1){
+            return memo[i];
+        }
+        else{
+            memo[i] = Math.max(nums[i] + dp(i+1), nums[i]);
+            return memo[i];
+        }
+    }
+}
+
+function maximumLength(nums, k){
+    let memo = new Array(nums.length);
+    for(let i = 0; i < memo.length; i++){
+        memo[i] = new Array(nums.length);
+    }
+    let max = dp(-1, k);
+    console.log(max);
+    return max;
+
+    function dp(last_ind, k){
+        if(last_ind == nums.length-1){
+            return 0;
+        }
+        if(memo[last_ind+1][k]){
+            return memo[last_ind+1][k]
+        }
+        let max = Number.MIN_SAFE_INTEGER;
+        for(let i = last_ind + 1; i < nums.length; i++){
+            if(last_ind == -1 || nums[i] == nums[last_ind]){
+                max = Math.max(max, 1 + dp(i, k));
+            }
+            else{
+                if(k == 0){
+                    continue;
+                }
+                else{
+                    max = Math.max(max, 1 + dp(i, k-1));
+                }
+            }
+        }
+        memo[last_ind+1][k] = max < 0 ? 0 : max
+        return max < 0 ? 0 : max;
+    }
+}
+
+function longestPalindrome2(s){
+    let map = new Map();
+    let longest = "";
+    dp(0, s.length-1);
+    console.log(longest);
+    return longest;
+
+    function dp(start, end){
+        if(map.has(`${start},${end}`)){
+            return map.get(`${start},${end}`);
+        }
+        if(start == end || start + 1 == end){
+            if(s.charAt(start) == s.charAt(end)){
+                map.set(`${start},${end}`, true);
+                longest = end - start + 1 > longest.length ? s.slice(start, end + 1) : longest;
+                return true;
+            }
+        }
+
+        if(s.charAt(start) == s.charAt(end) && dp(start+1, end-1) == true){
+            map.set(`${start},${end}`, true);
+                longest = end - start + 1 > longest.length ? s.slice(start, end + 1) : longest;
+                return true
+        }
+        else{
+            dp(start+1, end);
+            dp(start, end-1);
+            map.set(`${start},${end}`, false);
+            return false;
+        }
+    }
+}
 
 
 function max_p_amzn(pl){

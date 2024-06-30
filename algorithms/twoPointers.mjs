@@ -1,7 +1,7 @@
 // ..................................................................................................................................................................................
 // QUESTIONS SOLVED 9
 // threeSum([-2,0,1,1,2])                                                //LC:15;  medium
-// threeSumClosest([-1,2,1,-4], 1)                                       //LC:16;  medium *
+// threeSumClosest([1,1,1,0], -100)                                       //LC:16;  medium *
 // maxArea([1,1])                                                        //LC:11;  medium *
 // sortColors([2,0,2,1,1,0])                                             //LC:75;  medium
 // isSubsequence("axc", "ahbgdc")                                        //LC:392; easy
@@ -140,27 +140,23 @@ function rotate(nums, k){
     }
 
 function sortedSquares(nums){
-    let result = [];
     let left = 0;
     let right = nums.length-1;
-    // while the left and right pointer haven't crossed each other
+    let res = new Array(nums.length);
+    let res_pointer = nums.length-1;
     while(left <= right){
-        // if the left pointer points to a value whose absolute is is the larger value 
-        if(Math.abs(nums[left]) < Math.abs(nums[right])){
-            // push its square to the result array
-            result.push(nums[right] * nums[right]);
-            right--;
-        }
-        // else push the square of the right elemtent
-        else{
-            result.push(nums[left] * nums[left]);
+        if(Math.abs(nums[left]) > Math.abs(nums[right])){
+            res[res_pointer] = nums[left] * nums[left];
             left++;
         }
+        else{
+            res[res_pointer] = nums[right] * nums[right];
+            right--;
+        }
+        res_pointer--
     }
-    // reverse the array because we want the answer in non-decreasing order
-    result.reverse();
-    console.log(result);
-    return result;
+    console.log(res);
+    return res;
 }
 
 function isSubsequence(s,t){
@@ -192,34 +188,30 @@ function isSubsequence(s,t){
 }
 
 function moveZeroes (nums){
-    // first pointer
-    let firstZeroIndex = -1;
-    // second pointer
-    let firstNonZeroIndex = nums.length-1;
-    // while the pointers haven't crossed each other
-    while(firstNonZeroIndex > firstZeroIndex){
-        // find the first zero index
-        for(let i = firstZeroIndex+1; i < nums.length; i++){
-            if(nums[i] == 0){
-                firstZeroIndex = i;
-                break;
+    let last_non_zero_index = -1;
+    let all_elements_processed = false;
+    // i tracks the first zero element
+    for(let i = 0; i < nums.length; i++){
+        if(nums[i] == 0){
+            // j tracks the first non-zero element
+            for(let j  = last_non_zero_index != -1 ? last_non_zero_index : i + 1; j < nums.length; j++){
+                if(nums[j] != 0){
+                    // swap with i'th element
+                    let tmp = nums[i];
+                    nums[i] = nums[j];
+                    nums[j] = tmp;
+                    last_non_zero_index = j;
+                    // if the first non zero element is at the last index, all elements are processed
+                    if(j == nums.length-1){
+                        all_elements_processed = true;
+                    }
+                    // break after swapping
+                    break;
+                }
             }
-        }
-        // if no zeroes were found, exit early
-        if(firstZeroIndex == -1){
-            return
-        }
-        // else we find the first non zero value between firstZeroIndex and n.length-1.
-        // if firstNonZeroIndex exists, it means we can save some work by not exploring elements on  this index's left hand side; since firstNonZeroIndex represents the first non zero index, the next non zero index will obviously be on its right. But if the value of firstNonZeroIndex is not initialized, this is the first time we are finding a non zero
-        for(let i = firstNonZeroIndex ? firstNonZeroIndex + 1 :firstZeroIndex + 1; i < nums.length; i++){
-            if(nums[i] != 0){
-                firstNonZeroIndex = i;
-                // do your swaps
-                let temp = nums[i];
-                nums[i] = nums[firstZeroIndex];
-                nums[firstZeroIndex] = temp;
-                break;
-            }
+        } 
+        if (all_elements_processed) {
+            break;
         }
     }
     console.log(nums);
@@ -278,56 +270,39 @@ function maxArea(height){
 
 
 function threeSumClosest(nums, target){
-    // sort first 
-    nums.sort((a,b) => a-b);
-    let currentMinDistanceFromTarget = Number.MAX_VALUE;
-    let sum;
-    let result;
-    // gotta skip duplicates
-    let lastPicked;
-    // first pointer is the index of the outer loop; this tracks  the first element of the combination
-    for(let i = 0; i < nums.length; i++){
-        // if the first pointer points to an element that is a duplicate; skip it
-        if(lastPicked == nums[i]){
-            continue
+   nums = nums.sort((a, b) => a - b);
+   let threeSum = Number.MAX_SAFE_INTEGER;
+   let curr_dist = Number.MAX_SAFE_INTEGER;
+   let exact_sum_found = false;
+   for(let i = 0; i <= nums.length - 3; i++){
+    let sum_to_look_for = target - nums[i];
+    let left = i + 1;
+    let right = nums.length - 1;
+    while(left < right){
+        if(exact_sum_found){
+            break;
+        }
+        if(Math.abs(target - (nums[i] + nums[left] + nums[right])) < curr_dist){
+            curr_dist = Math.abs(target - (nums[i] + nums[left] + nums[right]));
+            threeSum = nums[i] + nums[left] + nums[right];
+        }
+        if(nums[left] + nums[right] < sum_to_look_for){
+            left++;
+        }
+        else if(nums[left] + nums[right] > sum_to_look_for){
+            right--;
         }
         else{
-            lastPicked = nums[i];
-        }
-        // second pointer
-        let leftPointer = i+1;
-        // third pointer
-        let rightPointer = nums.length-1;
-        // while the inner pointers have not crossed each other
-        while(leftPointer < rightPointer){
-            // calculate the current sum;
-            let currentSum = nums[i] + nums[leftPointer] + nums[rightPointer];
-            // calculate the distance from the target
-            let distance = Math.abs(target - currentSum);
-            // if the distance is the smallest it has ever been, update the result, and the min distance
-            if(distance < currentMinDistanceFromTarget){
-                currentMinDistanceFromTarget = distance;
-                result = [nums[i], nums[leftPointer], nums[rightPointer]];
-                sum = currentSum;
-            }
-            // if we are on the left hand side of the target integer, incrementing the total sum would get us closer to the target
-            if(currentSum < target){
-                leftPointer++;
-            }
-            // of we are on the right hand side of the target, decrementing the total sum would get us closer to the target
-            else if(currentSum > target){
-                rightPointer--;
-            }
-            // or if we are extremely lucky and find a sum equal to the target, we simply cant get any closer => update result and exit early
-            else{
-                sum = currentSum;
-                result = [nums[i], nums[leftPointer], nums[rightPointer]]
-                break;
-            }
+            exact_sum_found = true;
+            threeSum = target;
         }
     }
-    console.log(sum, result);
-    return sum;
+    if(exact_sum_found){
+        break;
+    }
+   }
+   console.log(threeSum);
+   return threeSum;
 }
 
 function threeSum(nums){

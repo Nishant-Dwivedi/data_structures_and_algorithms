@@ -1,10 +1,46 @@
-// *There's a line sweep alogirthm that uses prefix sum. Be sure to learn it.
-
-// QUESTIONS SOLVED 3
+// QUESTIONS SOLVED 4
 // findMaxLength([0,1])
 // subarraySum([1,2,1,2,1], 3) 
 // productExceptSelf([1,2,3,4])
+// minKBitFlips([0,0,0,1,0,1,1,0], 3)
 // ...................................................................................................................................................................................
+
+function minKBitFlips(nums, k){
+    let prefix = new Array(nums.length);
+    prefix.fill(0);
+    let bit_flips = 0;
+    let curr_prefix = 0;
+    let left = 0;
+    let right = 0;
+    while(left <= nums.length - k){
+        // find the next index i to flip i + k consecutive bits
+        while(right < nums.length){
+            curr_prefix += prefix[right];
+            // if the element pointed to by right is a 0 that's been flipped even number of times,
+            // or if it's a 1 that's been flipped odd number of times, the next k-bit flip needs to happen at index right.
+            if((nums[right] == 0 && curr_prefix % 2 == 0) || (nums[right] == 1 && curr_prefix % 2 != 0)){
+                break;
+            }
+            right++;
+        }
+       if(right <= nums.length - k){
+         // move left to the right pointer
+         left = right;
+         // flip the next k bits
+         bit_flips++;
+         // change prefix arr
+         prefix[left] = 1;
+         left + k < prefix.length ? prefix[left + k] = -1 : null;
+       }
+       else if(right > nums.length - k && right < nums.length){
+        console.log(-1);
+        return -1
+       }
+       else break;
+    }
+    console.log(bit_flips);
+    return bit_flips;
+}
 
 function subarraySum(nums, k){
     {

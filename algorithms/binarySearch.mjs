@@ -1,6 +1,6 @@
 // Questions solved: 11
 // search([3, 5, 1], 3)                                                                                    //LC: 33  medium
-// findMin([4,5,6,7,0,1,2])                                                                                //LC: 153 medium 
+findMin([4,5,6,7,0,1,2])                                                                                //LC: 153 medium 
 // console.log(findClosestElements([1,3], 1, 2));                                                          //LC: 658 medium  #good question
 // peakIndexInMountainArray([3,5,3,2,0])                                                                   //LC: 852 medium
 // searchSorted([1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1], 2)                                                //LC: 81  medium
@@ -10,7 +10,238 @@
 // shipWithinDays([3,2,2,4,1,4], 3)                                                                        //LC:1011 medium  #good question
 // maximumCandies([5,8,6], 3)                                                                              //LC:2226 medium  #good question
 // singleNonDuplicate([1,1,2,3,3,4,4,8,8])                                                                 //LC:540  medium  #good question
+// search_lc_704([-1,0,3,5,9,12], 13)
+// findMedianSortedArrays([2,2,4,4], [2,2,4,4])
+// jobScheduling([1,2,2,3], [2,5,3,4], [3,4,1,2])
+
 // ...................................................................................................................................................................
+
+function jobScheduling(startTime, endTime, profit){
+    // create a schwaztzian transform
+    let schz = new Array(startTime.length);
+    for(let i = 0; i < schz.length; i++){
+        schz[i] = [i, i, i];
+    }
+    schz = schz.sort((a, b) => {
+        if(startTime[a[0]] < startTime[b[0]]){
+            return -1
+        }
+        else return 1;
+    })
+    let new_start_time = [];
+    let new_end_time = [];
+    let new_profit = [];
+    for(let i = 0; i < schz.length; i++){
+        new_start_time.push(startTime[schz[i][0]]);
+        new_end_time.push(endTime[schz[i][1]]);
+        new_profit.push(profit[schz[i][2]]);
+    }
+    startTime = new_start_time;
+    endTime = new_end_time;
+    profit = new_profit;
+    let memo = new Map();
+    let max_p = dp(0);
+    console.log(max_p);
+    return max_p;
+
+    function dp(ind){
+        if(memo.has(ind)){
+            return memo.get(ind);
+        }
+        if(ind == startTime.length-1){
+            return profit[ind];
+        }
+        let nxt_ind_if_curr_ind_included = bs(ind + 1, startTime.length-1, endTime[ind]);
+        let max_profit_from_curr_ind = Math.max(nxt_ind_if_curr_ind_included ? profit[ind] + dp(nxt_ind_if_curr_ind_included) : profit[ind], dp(ind+1));
+        memo.set(ind, max_profit_from_curr_ind);
+        return max_profit_from_curr_ind;     
+    }
+
+    // we'll bs the first start time that is >= k;
+    function bs(start, end, k){
+        if(start > end){
+            return null;
+        }
+        let mid = start + Math.floor((end-start)/2);
+        if(startTime[mid] >= k && startTime[mid-1] < k){
+            return mid;
+        }
+        else if(startTime[mid] < k){
+            return bs(mid+1, end, k);
+        }
+        else{
+            return bs(start, mid-1, k);
+        }
+    }
+}
+
+function findMedianSortedArrays(nums1, nums2){
+    let median = null;
+    if((nums1.length + nums2.length) % 2 == 0){
+        let mid_left = find_med(0, nums1.length-1, nums1, nums2, Math.floor((nums1.length + nums2.length-1)/2), true) || find_med(0, nums2.length-1, nums2, nums1,  Math.floor((nums1.length + nums2.length-1)/2), true);
+        if(mid_left == null){
+            mid_left = find_med(0, nums1.length-1, nums1, nums2, Math.floor((nums1.length + nums2.length-1)/2), false) || find_med(0, nums2.length-1, nums2, nums1,  Math.floor((nums1.length + nums2.length-1)/2), false);
+        }
+        let mid_right = find_med(0, nums1.length-1, nums1, nums2, Math.ceil((nums1.length + nums2.length-1)/2), true) || find_med(0, nums2.length-1, nums2, nums1,  Math.ceil((nums1.length + nums2.length-1)/2), true);
+        if(mid_right == null){
+            mid_right = find_med(0, nums1.length-1, nums1, nums2, Math.ceil((nums1.length + nums2.length-1)/2), false) || find_med(0, nums2.length-1, nums2, nums1,  Math.ceil((nums1.length + nums2.length-1)/2), false);
+        }
+        median = (mid_left + mid_right)/2
+    }
+    else{
+        median = find_med(0, nums1.length-1, nums1, nums2, (nums1.length+nums2.length-1)/2, true) || find_med(0, nums2.length-1, nums2, nums1, (nums1.length + nums2.length-1)/2,true);
+        if(median == null){
+            find_med(0, nums1.length-1, nums1, nums2, (nums1.length+nums2.length-1)/2, false) || find_med(0, nums2.length-1, nums2, nums1, (nums1.length + nums2.length-1)/2,false);
+        }
+    }
+    console.log(median);
+    return median;
+
+    // k is the total number of elements larger than the median in both the arrays combined
+    function find_med(start, end, main_arr, secondary_arr, k, greater_than_logic_used){ 
+        if(start > end){
+            return null;
+        }
+        let mid = start + Math.floor((end-start)/2);
+        if(greater_than_logic_used == true){
+            let first_element_larger_than_mid = bs(0,secondary_arr.length-1, secondary_arr, main_arr[mid]);
+            // if there are exactly k elements larger than/equal to a particular element in both the arrays combined, it is our median element
+            if((main_arr.length - 1 - mid) + (secondary_arr.length - first_element_larger_than_mid) == k){
+            return main_arr[mid];
+            }
+            // else if there are more than k elements larger than a particular element, the median lies on the right half of this particular element
+            else if((main_arr.length - 1 - mid) + (secondary_arr.length - first_element_larger_than_mid) > k){
+                return find_med(mid+1, end, main_arr, secondary_arr, k, greater_than_logic_used);
+            }
+            else if((main_arr.length - 1 - mid) + (secondary_arr.length - first_element_larger_than_mid) < k){
+                return find_med(start, mid-1, main_arr, secondary_arr, k, greater_than_logic_used);
+            }
+            else return null;
+        }
+        // when <= logic is used to find the median(for cases like arr1: [2,2,4,4], arr2: [2,2,4,4])
+        else{
+            let last_element_smaller_than_mid = bs_less_than(0, secondary_arr.length-1, secondary_arr, main_arr[mid]);
+            // if there are exactly k elements smaller than/equal to a particular element in both the arrays combined, it is our median element
+            if((mid) + (last_element_smaller_than_mid + 1)){
+                return main_arr[mid];
+            }
+            else if((mid) + (last_element_smaller_than_mid + 1) > k){
+                return find_med(start, mid-1, main_arr, secondary_arr, k, greater_than_logic_used);
+            }
+            else if((mid) + (last_element_smaller_than_mid + 1) < k){
+                return find_med(mid+1, end, main_arr, secondary_arr, k, greater_than_logic_used);
+            }
+            else return null;
+        }
+    } 
+
+    // returns the index of the first element >= k
+    function bs(start, end, arr, k){
+        if(start > end){
+            return arr.length;
+        }
+        let mid = start + Math.floor((end-start)/2);
+        if((arr[mid] >= k && arr[mid-1] < k) || (arr[mid] >= k && mid == 0)){
+            return mid;
+        }
+        else if(arr[mid] < k){
+            return bs(mid+1, end, arr, k);
+        }
+        else if(arr[mid] >= k){
+            return bs(start, mid-1, arr, k);
+        }
+    }
+
+    // returns the index of the last element <= k
+    function bs_less_than(start, end, arr, k){
+        if(start > end){
+            return -1
+        }
+        let mid = start + Math.floor((end-start)/2);
+        if(arr[mid] <= k && arr[mid+1] > k || (arr[mid] <= k && mid == arr.length-1)){
+            return mid;
+        }
+        else if(arr[mid] > k){
+            return bs_less_than(start, mid-1, arr, k);
+        }
+        else if(arr[mid] <= k){
+            return bs_less_than(mid+1, end, arr, k);
+        }
+    }
+}
+
+class TimeMap {
+    constructor(){
+        this.time_stamp = new Map();
+        this.value = new Map();
+    }
+    set(key, value, timestamp) {
+        if(this.value.has(key)){
+            this.value.get(key).push(value);
+            this.time_stamp.get(key).push(timestamp);
+        }
+        else{
+            this.time_stamp.set(key, [timestamp]);
+            this.value.set(key, [value]);
+        }
+    }
+
+    get(key, timestamp){
+        if(!this.value.has(key)){
+            return "";
+        }
+        let bs = (start, end) => {
+            if(start > end){
+                return -1
+            }
+           let mid = start + Math.floor((end - start)/2);
+            if(this.time_stamp.get(key)[mid] <= timestamp && this.time_stamp.get(key)[mid+1] > timestamp){
+                return mid;
+            }
+            else if(!(this.time_stamp.get(key)[mid] <= timestamp) && this.time_stamp.get(key)[mid-1] <= timestamp){
+                return mid-1;
+            }
+            else if(this.time_stamp.get(key)[mid+1] <= timestamp){
+                return bs(mid+1, end);
+            }
+            else if(!(this.time_stamp.get(key)[mid] <= timestamp)){
+                return bs(start, mid-1);
+            }
+            else{
+                return -1;
+            }
+        }
+        let ind = bs(0, this.time_stamp.get(key).length -1);
+        if(ind == -1){
+            return this.value.get(key)[this.value.get(key).length - 1];
+        }
+        else{
+            return this.value.get(key)[ind];
+        }
+    }
+}
+
+function search_lc_704(nums, target){
+    let ind = bs(0, nums.length-1);
+    console.log(ind ?? -1);
+    return ind ?? -1;
+
+    function bs(start, end){
+        let mid = start + Math.floor((end - start)/2);
+        if(nums[mid] == target){
+            return mid;
+        }
+        else if((nums[mid] < target && nums[mid + 1] > target) || (nums[mid] > target && nums[mid-1] < target) || start >= end){
+            return -1;
+        }
+        else if(nums[mid] > target){
+            return bs(start, mid-1);
+        }
+        else if (nums[mid] < target){
+            return bs(mid + 1, end);
+        }
+    }
+}
 
 function singleNonDuplicate(nums){
     let pairsPossible = Math.floor(nums.length/2);
@@ -321,45 +552,35 @@ function searchMatrix (matrix, target){
 }
 
 function firstBad(n, bad){
-    let counter = 0
-    function isBadVersion(version){
-        if(version >= bad){
-            counter++;
+    let firstBad = bs(1, n);
+    console.log(firstBad);
+    return firstBad;
+
+    function isBadVersion(ver){
+        if(ver >= bad){
             return true
         }
-        else {
-            counter++
-            return false
+        else return false
+    }
+    
+    function bs(start, end){
+        let mid = start + Math.floor((end-start)/2);
+        let is_mid_bad = isBadVersion(mid);
+        let is_next_bad = isBadVersion(mid+1);
+        let is_prev_bad = isBadVersion(mid-1);
+        if(is_mid_bad && !is_prev_bad){
+            return mid;
+        }
+        else if(!is_mid_bad && is_next_bad){
+            return mid+1;
+        }
+        else if(is_mid_bad && is_prev_bad){
+            return bs(start, mid-1);
+        }
+        else if(!is_mid_bad && !is_next_bad){
+            return bs(mid + 1, end);
         }
     }
-
-    function findFirstBad(left, right) {
-      let middle = left + Math.floor((right-left)/2);
-      let isCurrBad = isBadVersion(middle);
-      let isPrevBad = isBadVersion(middle-1);
-      let isNextBad = isBadVersion(middle+1);
-
-      if(isCurrBad == true){
-        if(isPrevBad == false){
-            return middle
-        }
-        else{
-            return findFirstBad(left, middle-1)
-        }
-      }
-      else{
-        if(isNextBad == true){
-            return middle+1;
-        }
-        else{
-            return findFirstBad(middle+1, right);
-        }
-      }
-      
-    }
-    let result = findFirstBad(1, n);
-    console.log(result, counter);
-    return result;
 }
 
 function searchSorted(nums, target){
@@ -500,40 +721,23 @@ function findClosestElements (arr, k, x){
 }
 
 function findMin(nums){
-    // if the array contains no shifted elements, or if the array has only one element => return the first element
-    if(nums[0] < nums[nums.length1-1] || nums.length == 1){
-        return nums[0];
-    }
+   let min = bs(0, nums.length-1);
+   console.log(min);
+   return min;
 
-    function binarySearch (left, right){
-        let middle = left + Math.floor(((right-left)/2));
-        // the smallest element is the pivot element arount which the shift happened; it's the only element whose predecessor is larger than it.
-        if(nums[middle-1] > nums[middle]){
-            return nums[middle];
-        }
-        if(left >= right){
-            return -1
-        }
-        // if our middle lands in a subarray that's affected by the rotation
-        if(nums[left] > nums[middle] || nums[right] < nums[middle]){
-            // remove the unaffected part from our search space and search for target in the affected subarray
-            // why? because the unaffected subarray is going to have elements in increasing order and you have better chances of finding a girlfriend than finding an element whose predecessor is greater that it in this subarray.
-            if(nums[left] <= nums[middle]){
-                return binarySearch(middle+1, right)
-            }
-            else{
-                return binarySearch(left, middle-1);
-            }
-        }
-        // else our middle landed in a subarray unaffected by the shift that has elements in increasing order;
-        else{
-            // we dont even have to search in this case; we can return the smallest element of this subarray
-            return nums[left]
-        }
+   function bs(start, end){
+    if(nums[start] < nums[end]){
+        return nums[start];
     }
-    let result = binarySearch(0, nums.length - 1);
-    console.log((result));
-    return result;
+    let mid = start + Math.floor((end-start)/2);
+    if(nums[mid] < nums[mid-1]){
+        return nums[mid];
+    }
+    else if(nums[start] < nums[mid]){
+        return bs(mid+1, end);
+    }
+    else return bs(start, mid-1);
+   }
 }
 
 function search (nums, target){

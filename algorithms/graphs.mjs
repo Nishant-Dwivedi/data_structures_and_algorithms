@@ -25,9 +25,333 @@ import queue from "../data structures/queue.mjs"
 // findOrder(7, [[1,0],[0,3],[0,2],[3,2],[2,5],[4,5],[5,6],[2,4]])                                                                      //lc:210  medium *
 // checkIfPrerequisite(3, [[1,2],[1,0],[2,0]], [[1,0],[1,2]])                                                                           //lc:1462 medium *
 // calcEquation([["a","b"],["b","c"]], [2.0,3.0], [["a","c"],["b","a"],["a","e"],["a","a"],["x","x"]])                                  //lc:399  medium
+// floodFill([[1,1,1],[1,1,0],[1,0,1]], 1, 1, 2)                                                                                        //lc:733  easy
+// ladderLength("hit", "cog", ["hot","dot","dog","lot","log", "cog"])                                                                   //lc: 127 hard
+// canFinish(2, [[1,0]])
+// alienOrder(["a","bc","bb","ba"])                                                                                                     //lnt:892 hard
+// findCheapestPrice(3,  [[0,1,100],[1,2,100],[0,2,500]], 0, 2, 0)
 // .....................................................................................................................................................................
 
+function findCheapestPrice(n, flights, src, dst, k){
+    // build a graph, and a weight function irst
+    let weight = new Array(n);
+    for(let i = 0; i < n; i++){
+        weight[i] = new Array(n).fill(-1);
+    }2
+    let adj_list = new Map();
+    for(let i = 0; i < flights.length; i++){
+        if(adj_list.has(flights[i][0])){
+            adj_list.get(flights[i][0]).push(flights[i][1]);
+        }
+        else{
+            adj_list.set(flights[i][0], [flights[i][1]]);
+        }
+        weight[flights[i][0]][flights[i][1]] = flights[i][2];
+    }
+    for(let i = 0; i < n; i++){
+        if(!adj_list.has(i)){
+            adj_list.set(i, []);
+        }
+    }
+    let memo = new Array(n);
+    for(let i = 0; i < n; i++){
+        memo[i] = new Array(n).fill(-1);
+    }
+    let min_cost = dp(src, k);
+    console.log(min_cost != Number.MAX_SAFE_INTEGER ? min_cost : -1);
+    return min_cost != Number.MAX_SAFE_INTEGER ? min_cost : -1;
 
+    function dp(current_node, stops_remaining){
+        if(current_node == dst && stops_remaining >= 0){
+            memo[current_node][stops_remaining] = 0;
+            return 0;
+        }
+        else if(stops_remaining < 0){
+            return Number.MAX_SAFE_INTEGER;
+        }
+        else if(memo[current_node][stops_remaining] != -1){
+            return memo[current_node][stops_remaining];
+        }
+        let adj = adj_list.get(current_node);
+        if(adj.length == 0){
+            return Number.MAX_SAFE_INTEGER;
+        }
+        let min = Number.MAX_SAFE_INTEGER;
+        for(let i = 0; i < adj.length; i++){
+            min = Math.min(min, adj[i] != dst ? weight[current_node][adj[i]] + dp(adj[i], stops_remaining - 1) : weight[current_node][adj[i]] + dp(adj[i], stops_remaining));
+        }
+        memo[current_node][stops_remaining] = min;
+        return min;
+    }
+}
+
+function alienOrder(words){
+    // build a graph with the first diff character between words as nodes
+    let adj_list = new Map();
+    for(let i = 0; i < words.length-1; i++){
+        for(let j = i + 1; j < words.length; j++){
+            let res = generate_edge(words[i], words[j]);
+            // generate_edge returns zero when word[j] is a prefix of word[i], else it returns 1
+            if(res == 0){
+                return "";
+            }
+        }
+    }
+    // check if the graph is a DAG or not
+    let is_DAG = true;
+    let visited = new Set();
+    let curr_time = 0;
+    let discover_time = new Array(26).fill(-1);
+    let exit_time = new Array(26).fill(-1);
+    for(let i = 122; i >= 97; i--){
+        if(!is_DAG){
+            return ""
+        }
+        let curr_char = String.fromCharCode(i);
+        if(adj_list.has(curr_char) && !visited.has(curr_char)){
+            visited.add(curr_char);
+            check_cycle(curr_char);
+        }
+    }
+
+    // if the graph was a DAG, build a top sort of characters
+    let res = "";
+    visited.clear()
+    for(let i = 122; i >= 97; i--){
+        let curr_char = String.fromCharCode(i);
+        if(adj_list.has(curr_char)){
+            if(!visited.has(curr_char)){
+                visited.add(curr_char);
+                dfs(curr_char);
+            }
+        }
+    }
+    // reverse the order and return the result
+    res = reverse(res);
+    console.log(adj_list, res);
+    return res;
+
+    function reverse(word){
+        let rev = "";
+        let pointer = word.length-1;
+        while(pointer >= 0){
+            rev = rev.concat(word.charAt(pointer))
+            pointer--;
+        }
+        return rev
+    }
+
+    function dfs(char){
+        let adj = adj_list.get(char);
+        if(!adj){
+            res = res.concat(char);
+            return;
+        }
+        adj.forEach((adj_element) => {
+            if(!visited.has(adj_element)){
+                visited.add(adj_element)
+                dfs(adj_element);
+            }
+        })
+        res = res.concat(char);
+    }
+
+    function check_cycle(char){
+        curr_time++;
+        discover_time[char.charCodeAt(0)-97] = curr_time;
+        let adj = adj_list.get(char);
+        if(adj.size == 0){
+            curr_time++;
+            exit_time[char.charCodeAt(0)-97] = curr_time;
+        }
+        adj.forEach(adj_element => {
+            if(!visited.has(adj_element)){
+                visited.add(adj_element);
+                check_cycle(adj_element);
+            }
+            else{
+                if(exit_time[adj_element.charCodeAt(0)-97] == -1){
+                    is_DAG = false;
+                    return;
+                }
+            }
+        })
+        curr_time++;
+        exit_time[char.charCodeAt(0)-97] = curr_time;
+    }
+
+    function generate_edge(word_a, word_b){
+        // put all the unique characters in word_a, and word_b in the adj list.
+        Array.from(word_a).forEach(char => {
+            !adj_list.has(char) ? adj_list.set(char, new Set()) : null;
+        })
+        Array.from(word_b).forEach(char => {
+            !adj_list.has(char) ? adj_list.set(char, new Set()) : null;
+        })
+        // using two pointers, find the first different charater between both words
+        let pointer_a = 0;
+        let pointer_b = 0;
+        while((word_a.charAt(pointer_a) == word_b.charAt(pointer_b)) && pointer_a < word_a.length && pointer_b < word_b.length){
+            pointer_a++;
+            pointer_b++;
+        }
+        // create edge a -> b if found
+        if(pointer_a < word_a.length && pointer_b < word_b.length){
+            adj_list.has(word_a.charAt(pointer_a)) ?adj_list.get(word_a.charAt(pointer_a)).add( word_b.charAt(pointer_b)) : adj_list.set(word_a.charAt(pointer_a), new Set().add( word_b.charAt(pointer_b)));
+        }
+        // else if word_b is a prefix of word_a, exit early
+        else if(pointer_b == word_b.length && pointer_a < word_a.length){
+            return 0;
+        }
+        return 1;   
+    }
+}
+
+function canFinish(numCourses, prerequisites){
+    // build a directed graph
+    let adj_list = new Map();
+    for(let i = 0; i < prerequisites.length; i++){
+        adj_list.has(prerequisites[i][1]) ? adj_list.get(prerequisites[i][1]).push(prerequisites[i][0]) : adj_list.set(prerequisites[i][1], [prerequisites[i][0]]);
+    }
+    // check if the graph is a DAG
+    let visited = new Set();
+    let time = 0;
+    let has_cycle = false;
+    let discover_time = new Array(numCourses).fill(-1)
+    let exit_time = new Array(numCourses).fill(-1);
+    for(let i = 0; i < numCourses; i++){
+        if(!visited.has(i)){
+            visited.add(i);
+            dfs_cycle(i)
+        }
+    }
+    if(has_cycle){
+        console.log(false);
+        return false
+    }
+    else{
+        console.log(true);
+        return true
+    }
+
+    function dfs_cycle(node){
+        if(has_cycle){
+            return
+        }
+        time++;
+        discover_time[node] = time;
+        let adj = adj_list.get(node);
+        if(!adj){
+            time++;
+            exit_time[node] = time;
+            return
+        }
+        for(let i = 0; i < adj.length; i++){
+            if(!visited.has(adj[i])){
+                visited.add(adj[i]);
+                dfs_cycle(adj[i]);
+            }
+            else{
+                if(exit_time[adj[i]] == -1){
+                    has_cycle = true;
+                    return;
+                }
+            }
+        }
+        time++;
+        exit_time[node] = time;
+    }
+}
+
+function ladderLength(beginWord, endWord, wordList){
+    // build a graph
+    let adj_list = new Map();
+    let dict = new Set();
+    for(let i = 0; i < wordList.length; i++){
+        adj_list.set(wordList[i], new Set());
+        dict.add(wordList[i]);
+    }
+    adj_list.set(beginWord, new Set());
+    dict.add(beginWord);
+    for(let i = 0; i < wordList.length; i++){
+        generate_words(wordList[i]);
+    }
+    generate_words(beginWord);
+    // bfs from beginWord and find the shrtest path
+    let q = new queue();
+    let visisted = new Set();
+    q.enqueue(beginWord);
+    visisted.add(beginWord);
+    let path_len = 0;
+    while(!q.isEmpty()){
+        let frontier_breadth = q.size;
+        let current;
+        path_len++;
+        for(let i = 0; i < frontier_breadth; i++){
+            current = q.front;
+            q.dequeue();
+            visisted.add(current);
+            if(current == endWord){
+                console.log(path_len);
+                return path_len;
+            }
+            // enqueue adjacent nodes
+            let adj = adj_list.get(current);
+            adj.forEach(item => {
+                !visisted.has(item) ? q.enqueue(item) : null;
+            })
+        }
+    }
+    console.log(0);
+    return 0
+    // adds words that are different from "word" by just one character and are present in wordList
+    function generate_words(word){
+        for(let i = 0; i < word.length; i++){
+            let pref = word.slice(0, i);
+            let suff = word.slice(i + 1);
+            for(let j = 97 ; j <= 122; j++){
+                let new_word = `${pref}${String.fromCharCode(j)}${suff}`;
+                if(dict.has(new_word)){
+                    if(new_word == word){
+                        continue;
+                    }
+                    adj_list.get(word).add(new_word);
+                    adj_list.get(new_word).add(word);
+                }
+            }
+        }
+    }
+}
+
+function floodFill(image, sr, sc, color){
+    let starting_col = image[sr][sc];
+    let visited = new Set();
+    visited.add(`${sr},${sc}`);
+    image[sr][sc] = color;
+    dfs(sr, sc);
+    console.log(image);
+    return image;
+
+    function dfs(row, col){   
+        let adj = get_adj(row, col);
+        for(let i = 0; i < adj.length; i++){
+            if(!visited.has(`${adj[i][0]},${adj[i][1]}`) && image[adj[i][0]][adj[i][1]] == starting_col){
+                visited.add(`${adj[i][0]},${adj[i][1]}`);
+                image[adj[i][0]][adj[i][1]] = color;
+                dfs(adj[i][0], adj[i][1]);
+            }
+        }
+    }
+
+    function get_adj(row, col){
+        let res = [];
+        row-1 >= 0 ? res.push([row-1, col]) : null;
+        col+1 < image[0].length ? res.push([row, col+1]): null;
+        row+1 < image.length ? res.push([row+1, col]) : null;
+        col-1 >= 0 ? res.push([row, col-1]) : null;
+        return res;
+    }
+}
 
 function calcEquation (equations, values, queries){
     // build an adj list(undirected) and the weight map
@@ -260,93 +584,7 @@ function findOrder(n, prerequisites){
 }
 
 function findMinHeightTrees(n, edges){
-    // build an adj list
-    let adj_list = new Map();
-    for(let i = 0; i < edges.length; i++){
-        if(adj_list.has(edges[i][0])){
-            adj_list.get(edges[i][0]).push(edges[i][1]);
-        }
-        else{
-            adj_list.set(edges[i][0], [edges[i][1]]);
-        }
-        if(adj_list.has(edges[i][1])){
-            adj_list.get(edges[i][1]).push(edges[i][0]);
-        }
-        else{
-            adj_list.set(edges[i][1], [edges[i][0]]);
-        }
-    }
-    // find the first leaf node farthest away from any node in the graph; this leaf node will be the terminating node of some longest path in the graph; 
-    // perform dfs on the leaf node to find the farthest leaf node from it;
-    let visited = new Set();
-    // the first dfs will return one leaf node; we will perform another dfs on this returned node to generate the longest path
-    let leaf_node = dfs(0);
-    visited.clear()
-    let path = dfs_path(leaf_node[0]);
-    let center_nodes = [];
-    if(path.length % 2 == 0){
-        center_nodes.push(path[1][Math.floor(path[1].length/2)]);
-        center_nodes.push(path[1][Math.floor(path[1].length/2) - 1]);
-    }
-    else{
-        center_nodes.push(path[1][Math.floor(path[1].length/2)])
-    }
-    console.log(path[1], center_nodes);
-    return center_nodes;
-
-    // helper; generates the longest path when given one end of it.
-    function dfs_path(index){
-        // pre-visit
-        visited.add(index);
-        let adj = adj_list.get(index);
-        // if current node is a leaf node, return its dist from itself and a path array containing just itself in an array
-        if(adj.length == 1 && visited.has(adj[0]) == true){
-            return [0, [index]];
-        }
-        // init an array with dist = -1 and null as path arr
-        let longest = [-1, null];
-        for(let i = 0; i < adj.length; i++){
-            if(visited.has(adj[i]) != true){
-                visited.add(adj[i]);
-                let res = dfs_path(adj[i]);
-                if(res[0] > longest[0]){
-                    // res will get garbage collected once the for loop ends
-                    longest = res;
-                }
-            }
-        }
-        // post visit; increment the longest dist by 1 and push the current node to the longest path
-        longest[0]++;
-        longest[1].push(index);
-        return longest;
-    }
-    // helper; returns the farthest node away from a starting node and the distance in a tuple
-    function dfs(index){
-        // previsit
-        visited.add(index);
-        let adj = adj_list.get(index);
-        // if the current node is a leaf node(it has just one internal node in its adj list and that internal node is already visited), return its distance from itself (0) and the node value in a tuple
-        if(adj.length == 1 && visited.has(adj[0]) == true){
-            return[index, 0];
-        }
-
-        // visit adj; find the adj vertex through which the the path to a leaf node is largest in length
-        let longest_dist = -1;
-        let longest_dist_leaf;
-        for(let i = 0; i < adj.length; i++){
-            if(visited.has(adj[i]) == false){
-                visited.add(adj[i]);
-                let adj_tuple = dfs(adj[i]);
-                // if the length of the path through the adj vertex is larger than the current largest path length, update the largest path length and the leaf node 
-                if(adj_tuple[1] > longest_dist){
-                    longest_dist = adj_tuple[1];
-                    longest_dist_leaf = adj_tuple[0];
-                }
-            }
-        }
-        // post visit; add 1 to the path length (edge from the current node to the adj node) and return the path length along with the corresponding leaf node at which the path ends
-        return [longest_dist_leaf, longest_dist+1];
-    }    
+    // todo
 }
  
 function isBipartite(graph){
@@ -1547,73 +1785,53 @@ function accountsMerge(accounts){
 }
 
 function longestIncreasingPath(matrix){
-    let longest_path_size = Number.MIN_SAFE_INTEGER; 
-    let memo = new Map();
+    let longest_path_size = Number.MIN_SAFE_INTEGER;
+    let memo = new Array(matrix.length);
+    for(let i = 0; i < memo.length; i++){
+        memo[i] = new Array(matrix[0].length).fill(-1);
+    }
     for(let i = 0; i < matrix.length; i++){
         for(let j = 0; j < matrix[0].length; j++){
-            let index = `${i},${j}`;
-            let curr_largest_path_size;
-            // if largest path for the current index is already memoized, get the memoized value
-            if(memo.has(index)){
-                curr_largest_path_size = memo.get(index);
+            if(memo[i][j] == -1){
+                longest_path_size = Math.max(longest_path_size, dp(`${i},${j}`));
             }
-            // else calc the val by doing a dfs on the index
             else{
-                curr_largest_path_size = dfs(index);
+                longest_path_size = Math.max(longest_path_size, memo[i][j]);
             }
-            // update the longest path
-            longest_path_size = Math.max(longest_path_size, curr_largest_path_size);
         }
     }
     console.log(longest_path_size);
-    return longest_path_size
+    return longest_path_size;
 
-    function dfs(ind){
-        // pre-visit; if there's a memoized value for a node, get it and exit early
-        if(memo.has(ind)){
-            return memo.get(ind);
+    function dp(index){
+        let row =  Number(index.slice(0, index.indexOf(",")));
+        let col = Number(index.slice(index.indexOf(",") + 1));
+        if(memo[row][col] != -1){
+            return memo[row][col];
         }
-        // if we are at a leaf vertex, return 1; a sink vertex is a leaf vertex and its height is 1. It'll have no outgoing edges
-        let adj = get_adj(ind);
+        let longest = Number.MIN_SAFE_INTEGER;
+        let adj = get_adj(index);
         if(adj.length == 0){
-            // memoize and return the value
-            memo.set(ind, 1);
             return 1;
         }
-        // visit the adj nodes; current vertex's longest path is the longest path from one of its adjacent vertex + 1;
-        let deepest_path = 0;
-        for(let i = 0; i < adj.length; i++){
-            let curr_path = dfs(adj[i]);
-            deepest_path = Math.max(curr_path, deepest_path);
+        else{
+            for(let i = 0; i < adj.length; i++){
+                longest = Math.max(longest, 1 + dp(adj[i]));
+            }
         }
-        // post-visit; memoize the result and return the longest path starting from the current vertex.
-        memo.set(ind, deepest_path+1);
-        return deepest_path+1;
+        memo[row][col] = longest;
+        return longest;
     }
 
     function get_adj(index){
-        let split_ind = index.indexOf(",");
-        let row = Number(index.slice(0, split_ind));
-        let col = Number(index.slice(split_ind + 1))
-        let adj_arr = [];
-
-        // push the top element's index
-        if(row != 0 && matrix[row-1][col] > matrix[row][col]){
-            adj_arr.push(`${row-1},${col}`);
-        }
-        // push the right element's index
-        if(col != matrix[0].length-1 && matrix[row][col+1] > matrix[row][col]){
-            adj_arr.push(`${row},${col+1}`)
-        }
-        // push the bottom element's index
-        if(row != matrix.length-1 && matrix[row+1][col] > matrix[row][col]){
-            adj_arr.push(`${row+1},${col}`)
-        }
-        // push the left element's index
-        if(col != 0 && matrix[row][col-1] > matrix[row][col]){
-            adj_arr.push(`${row},${col-1}`)
-        }
-        return adj_arr;
+        let row = Number(index.slice(0, index.indexOf(",")));
+        let col = Number(index.slice(index.indexOf(",") + 1));
+        let adj = [];
+        row - 1 >= 0 && matrix[row-1][col] > matrix[row][col] ? adj.push(`${row-1},${col}`) : null;
+        col + 1 < matrix[0].length && matrix[row][col+1] > matrix[row][col] ? adj.push(`${row},${col+1}`) : null;
+        row + 1 < matrix.length && matrix[row+1][col] > matrix[row][col] ? adj.push(`${row+1},${col}`) : null;
+        col - 1 >= 0 && matrix[row][col-1] > matrix[row][col] ? adj.push(`${row},${col-1}`) : null;
+        return adj;
     }
 }
 

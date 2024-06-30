@@ -31,7 +31,7 @@
 import stack from "../data structures/stack.mjs";
 
 // .................................................................................................................................................................................
-// QUESTIONS SOLVED(17)
+// QUESTIONS SOLVED(18)
 
 // printDiceRollCombinations(3);                                     //GFG question: k dice combinations; easy
 // permuteAString("cat");                                            //GFG question: Write a program to print all Permutations of given String; easy
@@ -50,7 +50,99 @@ import stack from "../data structures/stack.mjs";
 // maxUniqueSplit("aba")                                             //lc1593: medium
 // getFactors(32)                                                    //premium medium
 // makesquare([3,17,4,1,12,18,19,20,11,17,6,7,16,12,19])             //lc:437  medium *
-// .........................................................................................................................................................................................
+// solveSudoku([[".",".","9","7","4","8",".",".","."],["7",".",".",".",".",".",".",".","."],[".","2",".","1",".","9",".",".","."],[".",".","7",".",".",".","2","4","."],[".","6","4",".","1",".","5","9","."],[".","9","8",".",".",".","3",".","."],[".",".",".","8",".","3",".","2","."],[".",".",".",".",".",".",".",".","6"],[".",".",".","2","7","5","9",".","."]])
+
+function solveSudoku(board){
+  // this flag is tripped when a final state is reached and futher modifications to the board needs to restricted
+  let done = false;
+  backtrack(0, 0);
+  console.log(board);
+  return;
+
+  function backtrack(row, col){
+    // base case: all cells processed;
+    if(row > 8 && col > 8){
+      done = true;
+      console.log(board);
+      return
+    }
+    // if current cell's configuration is fixed and can't be changed, move to the next cell
+    if(board[row][col] != "."){
+      // if we won't go out of bounds in the same row, move to the next cell in the same row
+      if(col + 1 < 9){
+        backtrack(row, col + 1)
+        return
+      }
+      // else if we'd go oob in the same row
+      else{
+        // and there's rows left, move to a the first cell of the next row
+        if(row + 1 < 9){
+          backtrack(row + 1, 0)
+          return
+        }
+        // otherwise, we're done since were oob on both the rows and the columns
+        else{
+          done = true;
+          return
+        }
+      }
+    }
+
+
+    let candidates = gen_candidates(row, col);
+    if(candidates.length == 0){
+      return;
+    }
+    for(let i = 0; i < candidates.length; i++){
+      // if the done flag is set to true, there's no need to check other candidates for the current cell because the current candidate selection lead to a valid solution
+      if(done == true){
+        return;
+      }
+      board[row][col] = candidates[i];
+      // recurse on the next cell
+      if(col + 1 < 9){
+        backtrack(row, col + 1)
+      }
+      else{
+        if(row + 1 < 9){
+          backtrack(row + 1, 0)
+        }
+        else{
+          done = true;
+          return
+        }
+      }
+      // backtrack if the done flag isn't set to true already
+      board[row][col] = done == false ? "." : board[row][col] ;
+    }
+  }
+
+  function gen_candidates(row, col){
+    let row_set = new Set();
+    let col_set = new Set();
+    for(let i = 0; i < 9; i++){
+      if(board[i][col] != "."){
+        row_set.add(board[i][col]);
+      }
+      if(board[row][i] != "."){
+        col_set.add(board[row][i]);
+      }
+    }
+    // observe the start and end position of i and j carefully!!
+    for(let i = row - row % 3 ; i <  row - row % 3 + 3; i++){
+      for(let j = col - col % 3; j < col - col % 3 + 3; j++){
+        row_set.add(board[i][j]);
+      }
+    }
+    let candidates = [];
+    for(let i = 1; i <= 9; i++){
+      if(!row_set.has(`${i}`) && !col_set.has(`${i}`)){
+        candidates.push(`${i}`);
+      }
+    }
+    return candidates;
+  }
+}
 
 function makesquare(matchsticks){
   // figure out the size of each side

@@ -1,11 +1,8 @@
-// QUESTIONS SOLVED (12)
-
-// quickSort([1,2,5,3,6,9], 0, 5)                             //standard quickSort Algorithm
-// mergeSort([2,5,1,10,11])                                   //standard mergeSort Algorithm
+// QUESTIONS SOLVED (16)
 // secondLargestElement([1,2,3,4,5])                          //GFG question 
 // containsDuplicate([1,2,3,1])                               //LC 217 easy
 // twoSum(nums, target)                                       //LC 1 easy
-// setZeroes([[0,1,2,0],[3,4,5,2],[1,3,1,5]])                 //LC 73 medium
+// setZeroes([[0,0,0,0 ], [0,4,5,2], [0,3,1,5]])              //LC 73 medium
 // rotateImage([[1,2,3],[4,5,6],[7,8,9]])                     //LC 48 medium  *
 // nextPermutation ([1,3,2])                                  //LC 31 medium  *
 // longestConsecutive([100,4,200,1,3,2])                      //LC 128 medium *
@@ -15,8 +12,166 @@
 // insert([[1,5]], [6,8])
 // merge([[1,4],[0,0]])
 // employeeFreeTime([[1,2,5,6],[1,3],[4,10]])
+// longestPalindrome("abccccdd");
+// spiralOrder([[1,2,3],[4,5,6],[7,8,9]])
+// isValidSudoku()
+// print_star()
 // ..................................................................................................................................................................................
 
+function print_star(height){
+    let start_ind = Math.floor(height/2);
+    let end_ind = Math.floor(height/2);
+    for(let i = 0; i < height/2; i++){
+        let str = ""
+        for(let j = 0; j < height; j++){
+            if(j < start_ind || j > end_ind){
+               str = str.concat(" ");
+            }
+            else{
+                str = str.concat("#");
+            }
+        }
+        console.log(str);
+        start_ind--;
+        end_ind++;
+    }
+}
+
+function isValidSudoku (board){
+    let is_valid = true;
+    let row_map = new Map();
+    let col_map = new Map();
+    for(let i = 0; i < 9; i++){
+        row_map.set(i, new Array(9));
+        col_map.set(i, new Array(9));
+    }
+    let mini_board_map = new Map();
+    for(let i = 0; i < board.length; i++){
+        for(let j = 0; j < board[0].length; j++){
+            if(board[i][j] == "."){
+                continue;
+            }
+            // check if the current element isn't unique in its row/col
+            if(row_map.get(i).includes(board[i][j])){
+                is_valid = false;
+                break;
+            }
+            else{
+                row_map.get(i).push(board[i][j]);
+            }
+            if(col_map.get(j).includes(board[i][j])){
+                is_valid = false;
+                break;
+            }
+            else{
+                col_map.get(j).push(board[i][j]);
+            }
+            // check if the current element isn't unique in its mini 3x3 board
+            let mini_boards_row = Math.floor(i/3);
+            let mini_boards_col = Math.floor(j/3);
+            if(mini_board_map.has(`${mini_boards_row},${mini_boards_col}`)){
+                if(mini_board_map.get(`${mini_boards_row},${mini_boards_col}`).has(board[i][j])){
+                    is_valid = false;
+                    break;
+                }
+                else{
+                    mini_board_map.get(`${mini_boards_row},${mini_boards_col}`).add(board[i][j]);
+                }
+            }
+            else{
+                mini_board_map.set(`${mini_boards_row},${mini_boards_col}`, new Set().add(board[i][j]));
+            }
+        }
+        if(is_valid == false){
+            break;
+        }
+    }
+    console.log(is_valid);
+    return is_valid;
+}
+
+
+function spiralOrder(matrix){
+    // [x, y]: right [1,0], down [0,-1], left [-1,0], up [0, 1];
+    let movement = [1, 0];
+    let res = [];
+    let row = 0;
+    let col = 0;
+    let right_boundary = matrix[0].length;
+    let bottom_boundary = matrix.length;
+    let left_boundary = -1;
+    let top_boundary = -1;
+    
+    let elements_processed = 0;
+    while(elements_processed < matrix.length * matrix[0].length){
+        res.push(matrix[row][col]);
+        elements_processed++;
+        // traverse rightwards
+        if(movement[0] == 1 && movement[1] == 0){
+            if(col + 1 == right_boundary){
+                movement = [0, -1];
+                top_boundary++;
+                row++;
+                continue
+            }
+            else col++;
+        }
+        // traverse downwards
+        else if(movement[0] == 0 && movement[1] == -1){
+            if(row + 1 == bottom_boundary){
+                movement = [-1, 0];
+                right_boundary--;
+                col--
+                continue
+            }
+            else row++;
+        }
+        // traverse leftwards
+        else if(movement[0] == -1 && movement[1] == 0){
+            if(col - 1 == left_boundary){
+                movement = [0, 1];
+                bottom_boundary--;
+                row--;
+                continue;
+            }
+            else col--;
+        }
+        // traverse upwards
+        else{
+            if(row - 1 == top_boundary){
+                movement = [1, 0];
+                left_boundary++;
+                col++;
+                continue;
+            }
+            else row--;
+        }
+    }
+    console.log(res);
+    return res;
+}
+
+
+function longestPalindrome(s){
+    let longest = 0;
+    let odd_frq_char_count = 0;
+    let map = new Map();
+    for(let i = 0; i < s.length; i++){
+        map.has(s.charAt(i)) ? map.set(s.charAt(i), map.get(s.charAt(i)) + 1) : map.set(s.charAt(i), 1);
+        if(map.get(s.charAt(i)) % 2 == 0){
+            odd_frq_char_count--;
+            longest += 2;
+        }
+        else{
+            odd_frq_char_count++;
+        }
+    }
+    if(odd_frq_char_count > 0){
+        longest++;
+    }
+    console.log( longest);
+    return longest;
+}
 function employeeFreeTime(schedule){
     // get all the intervals in a single array
     let cumulative_schedule = [];
@@ -42,7 +197,7 @@ function merge (intervals){
     // sort based on interval's start time 
     intervals = intervals.sort((a, b) => {
         return a[0] - b[0];
-    })
+    });
     let res = [];
     for(let i = 0; i < intervals.length; i++){
         let curr_int_start = intervals[i][0];
@@ -259,45 +414,40 @@ function findDuplicates (nums){
 }
 
 function longestConsecutive (nums){
-    {
-        // optimal solution of linear time complexity O(n) is kinda tricky. super-linear complexity (O(nlogn)) algorithm is intuitive => sort the array and solve.
-        // O(n) solution is more of a trick that's not very intuitive at first.
-        // => we populate a hashset with all the numbers.
-        // => we then look for numbers that represent the beginning of a range. for example, if in an input 2 exists,  3 can never be the element that represents the beginning of a consecutive range.
-        // => so we iterate over the array and check for each element if element-1 exists in our input(hashset) or not
-        // => if it does, we continue to the next element since there's no point in starting counting from this number, a smaller number already exists and we well count all the elements greater than the current number again if we dont skip the current number. waste of effort.
-        // => else we calculate the size of the range and update the current largest range accordingly
-    }
-    let hashset = new Set();
-    let currentLargestRange = 1;
-    for (let i = 0; i < nums.length; i++){
-        hashset.add(nums[i]);
+    let map = new Map();
+    let set = new Set();
+    let lcs = -1;
+    // populate a map with elements and map them to a value of -1
+    for(let i = 0; i < nums.length; i++){
+        if(map.has(nums[i]) == false){
+            map.set(nums[i], -1);
+        }
     }
     for(let i = 0; i < nums.length; i++){
-        if(hashset.has(nums[i] - 1)){
-            continue
-        }
-        else{
-            let rangeStillIntact = true;
-            let startValue = nums[i] + 1;
-            let range = 1;
-            while(rangeStillIntact){
-                if(hashset.has(startValue)){
-                    range++;
-                    startValue++;
-                }
-                else{
-                    rangeStillIntact = false;
-                    break;
-                }
+            // if current element has been visited already, move on
+            if(set.has(nums[i])){
+                continue;
             }
-            if(range > currentLargestRange){
-                currentLargestRange = range
+            //elsem we extend the sequence starting from the current element until it can no longer be extended
+            let longest_curr_seq = 1;
+            set.add(nums[i]);
+            let nxt = nums[i] + 1;
+            // loop over until we find an element which is the starting element of some other lcs, or isn't present in nums at all
+            while(map.has(nxt) != false && map.get(nxt) == -1){
+                set.add(nxt);
+                longest_curr_seq++;
+                nxt++;
             }
-        }
+            // if nxt was pointing to an element which was the starting point of another lcs, its length will get added to current lcs'es length
+            if(map.has(nxt) && map.get(nxt) != -1){
+                longest_curr_seq += map.get(nxt);
+            }
+            // update the length of lcs starting with the current element in the map and update max lcs
+            map.set(nums[i], longest_curr_seq);
+            lcs = Math.max(lcs, longest_curr_seq);
     }
-    console.log(currentLargestRange);
-    return currentLargestRange;
+    console.log(lcs);
+    return lcs;
 }
 
 function nextPermutation (nums){
@@ -348,10 +498,7 @@ function nextPermutation (nums){
 }
 
 function rotateImage (matrix){
-    {
-        // find the transpose of the matrix(matrix[i][j] becomes matrix[j][i]);
-        // switch last elements of each row
-    }
+    // find the transpose of the matrix(matrix[i][j] becomes matrix[j][i]);
     let jstartsfrom = 0
     for(let i = 0; i < matrix.length; i++){
         for (let j = jstartsfrom; j < matrix[i].length; j++){
@@ -361,6 +508,8 @@ function rotateImage (matrix){
         }
         jstartsfrom++;
     }
+    
+    // rotate the rows
     let i = 0;
     let j = matrix[0].length-1;
     while(i < j){
@@ -378,46 +527,29 @@ function rotateImage (matrix){
 }
 
 function setZeroes (matrix){
-   {
-    // start from beginning and mark the zero elements by changing them to null; O(n)
-    // start again from the beginnnig, if you encounter a null  
-        // loop over the corresponding row and column to make that rows/columns  non-null elements to zero and the one that triggered the loop .........O(n^2)
-    // else just continue
-    // last loop to change nulls to zero ............O(n)
-   }
-   for (let i = 0; i < matrix.length; i++){
-    for(let j =0; j < matrix[i].length; j++){
+   for(let i = 0; i < matrix.length; i++){
+    for(let j = 0; j < matrix[0].length; j++){
         if(matrix[i][j] == 0){
-            matrix[i][j] = null;
-        }
-    }
-   }
-
-   for(let i = 0; i < matrix.length; i++){
-    for(let j = 0; j < matrix[i].length; j++){
-        if(matrix[i][j] == null){
-            for(let k = 0; k < matrix.length; k++){
-                if(matrix[k][j] != null){
-                    matrix[k][j] = 0;
+            for(let k = 0; k < Math.max(matrix.length, matrix[0].length); k++){
+                if(k < matrix.length){
+                    matrix[k][j] = matrix[k][j] != 0 ?  null: matrix[k][j];
                 }
-            }
-            for(let l = 0; l < matrix[i].length; l++){
-                if(matrix[i][l] != null){
-                    matrix[i][l] = 0;
+                if(k < matrix[0].length){
+                    matrix[i][k] = matrix[i][k] != 0 ? null : matrix[i][k];
                 }
             }
         }
     }
    }
    for(let i = 0; i < matrix.length; i++){
-    for(let j = 0; j < matrix[i].length; j++){
+    for(let j = 0; j< matrix[0].length; j++){
         if(matrix[i][j] == null){
-            matrix[i][j] = 0
+            matrix[i][j] = 0;
         }
     }
    }
    console.log(matrix);
-   return matrix
+   return
 }
 
 
